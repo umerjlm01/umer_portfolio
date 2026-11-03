@@ -1,0 +1,2327 @@
+/* ============================================================
+   DEVICE-SHELL PORTFOLIO — the original two-device concept.
+   The portfolio renders as an app INSIDE a device that fills
+   the viewport:
+     - phone (<768px) : mobile phone frame, bottom tabs, 1 column
+     - ipad  (≥768px) : iPad frame
+         · landscape → sidebar + sticky 3D phone showcase (desktop-split)
+         · portrait  → bottom tabs + single column
+   Content scrolls INSIDE the screen; the body never scrolls.
+   ============================================================ */
+
+/* SSR placeholder — same dark backdrop as .device-shell, shown until the
+   client mounts so the viewport-dependent className never mismatches. */
+.device-shell-preload {
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(212, 21, 20, 0.08), transparent 50%),
+    #0c0c0c;
+}
+
+:root {
+  --bg: #080808;
+  --fg: #CDCBCA;
+  --accent: #D41514;
+  --project-accent: #D41514;
+  color-scheme: dark;
+}
+
+.device-content {
+  --project-accent: var(--project-accent, #D41514);
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100dvh;
+  margin: 0;
+  overflow: hidden;
+}
+
+body {
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: clamp(0.875rem, 0.85rem + 0.3vw, 1.125rem); /* ≥14px fluid body */
+  line-height: 1.6;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ============================================================
+   DEVICE SHELL — fills the ENTIRE viewport (position:fixed; inset:0).
+   All modes show a device frame (bezel) so you see the WHOLE device,
+   not just the screen. The screen sits inside the bezel.
+   ============================================================ */
+.device-shell {
+  position: fixed;
+  display: flex;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(212, 21, 20, 0.08), transparent 50%),
+    #0c0c0c;
+}
+
+/* PHONE — full phone frame with bezel (portrait, fills viewport) */
+.device-shell.mode-phone {
+  top: max(clamp(3px, 0.75vw, 6px), env(safe-area-inset-top, 0px));
+  right: max(clamp(3px, 0.75vw, 6px), env(safe-area-inset-right, 0px));
+  bottom: max(clamp(3px, 0.75vw, 6px), env(safe-area-inset-bottom, 0px));
+  left: max(clamp(3px, 0.75vw, 6px), env(safe-area-inset-left, 0px));
+  padding: clamp(14px, 3.5vw, 24px);
+  border-radius: clamp(32px, 7vw, 54px);
+  box-shadow:
+    inset 0 0 0 2px rgba(205, 203, 202, 0.18),
+    inset 0 2px 8px rgba(205, 203, 202, 0.1),
+    inset 0 -3px 8px rgba(0, 0, 0, 0.7),
+    0 0 0 1px rgba(0, 0, 0, 0.5);
+}
+
+/* IPAD — thin uniform bezel, rectangular, works in both orientations */
+.device-shell.mode-ipad {
+  top: max(clamp(4px, 1vw, 8px), env(safe-area-inset-top, 0px));
+  right: max(clamp(4px, 1vw, 8px), env(safe-area-inset-right, 0px));
+  bottom: max(clamp(4px, 1vw, 8px), env(safe-area-inset-bottom, 0px));
+  left: max(clamp(4px, 1vw, 8px), env(safe-area-inset-left, 0px));
+  padding: clamp(10px, 1.4vw, 18px);
+  border-radius: clamp(20px, 2.4vw, 34px);
+  box-shadow:
+    inset 0 0 0 1.5px rgba(205, 203, 202, 0.16),
+    inset 0 2px 10px rgba(0, 0, 0, 0.6),
+    inset 0 -2px 8px rgba(0, 0, 0, 0.5);
+}
+
+/* The bezel ring overlay (iPad) — purely decorative hairline */
+.device-bezel {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px rgba(205, 203, 202, 0.06);
+  z-index: 60;
+}
+
+/* Front-camera dot centered on the top bezel (iPad) */
+.device-camera-dot {
+  position: absolute;
+  top: clamp(4px, 0.6vw, 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: radial-gradient(circle at 35% 30%, #1a1a22 0%, #050507 70%);
+  box-shadow: inset 0 0 0 1px rgba(205, 203, 202, 0.18);
+  z-index: 61;
+}
+
+/* ============================================================
+   DEVICE SCREEN — the app surface inside the bezel.
+   Flex row when sidebar present (iPad landscape), else column.
+   ============================================================ */
+.device-screen {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  overflow: hidden;
+}
+.device-shell.mode-phone .device-screen {
+  border-radius: clamp(20px, 5vw, 40px);
+  background: var(--bg);
+  box-shadow: inset 0 0 0 1px rgba(205, 203, 202, 0.05);
+}
+.device-shell.mode-ipad .device-screen {
+  border-radius: clamp(14px, 1.8vw, 26px);
+  background: var(--bg);
+  box-shadow: inset 0 0 0 1px rgba(205, 203, 202, 0.05);
+}
+
+/* ============================================================
+   SIDEBAR (iPad landscape) — iPad-style left nav
+   ============================================================ */
+.sidebar {
+  width: clamp(72px, 7vw, 96px);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: clamp(0.75rem, 2vw, 1.25rem) 0.5rem;
+  padding-top: max(clamp(0.75rem, 2vw, 1.25rem), env(safe-area-inset-top));
+  background: rgba(205, 203, 202, 0.02);
+  border-right: 1px solid rgba(205, 203, 202, 0.08);
+}
+.sidebar-brand {
+  width: clamp(32px, 3.5vw, 40px);
+  height: clamp(32px, 3.5vw, 40px);
+  border-radius: 10px;
+  background: linear-gradient(145deg, rgba(212, 21, 20, 0.25), rgba(212, 21, 20, 0.05));
+  border: 1px solid rgba(212, 21, 20, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+.sidebar-brand-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 0 8px rgba(212, 21, 20, 0.7);
+}
+.sidebar-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  flex: 1;
+}
+.sidebar-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 7px 8px;
+  border-radius: 12px;
+  font-size: 0.6875rem; /* 11px */
+  font-weight: 600;
+  color: rgba(205, 203, 202, 0.45);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s, background 0.2s;
+}
+.sidebar-link[data-active="true"] {
+  color: var(--accent);
+  background: rgba(212, 21, 20, 0.1);
+}
+.sidebar-link[data-active="true"] svg {
+  filter: drop-shadow(0 0 6px rgba(212, 21, 20, 0.6));
+}
+.sidebar-link-icon {
+  width: 22px;
+  height: 22px;
+}
+.sidebar-link-label {
+  font-size: 0.625rem;
+}
+@media (hover: hover) and (pointer: fine) {
+  .sidebar-link:hover {
+    color: rgba(205, 203, 202, 0.85);
+    background: rgba(205, 203, 202, 0.05);
+  }
+}
+
+/* ============================================================
+   DEVICE MAIN — the content column (right of sidebar / below header)
+   ============================================================ */
+.device-main {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* Topbar (iPad) — time + status icons + scroll progress */
+.device-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: clamp(0.625rem, 1.5vw, 1rem) clamp(1rem, 3vw, 2rem) 0.5rem;
+  padding-top: max(clamp(0.625rem, 1.5vw, 1rem), env(safe-area-inset-top));
+  background: linear-gradient(
+    to bottom,
+    rgba(8, 8, 8, 0.96) 0%,
+    rgba(8, 8, 8, 0.8) 70%,
+    rgba(8, 8, 8, 0)
+  );
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.device-topbar-time {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--fg);
+  font-variant-numeric: tabular-nums;
+}
+.device-topbar-icons {
+  display: flex;
+  align-items: center;
+}
+.device-topbar .scroll-progress-track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+/* Phone header (status bar + progress) */
+.phone-header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: linear-gradient(
+    to bottom,
+    rgba(8, 8, 8, 0.96) 0%,
+    rgba(8, 8, 8, 0.85) 70%,
+    rgba(8, 8, 8, 0.3) 100%
+  );
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: max(14px, env(safe-area-inset-top)) 22px 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--fg);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Scroll progress bar */
+.scroll-progress-track {
+  height: 2px;
+  background: rgba(205, 203, 202, 0.08);
+}
+.scroll-progress-bar {
+  height: 100%;
+  background: var(--accent);
+  transform-origin: left center;
+  box-shadow: 0 0 8px rgba(212, 21, 20, 0.6);
+}
+
+/* ============================================================
+   DEVICE CONTENT — the scrollable area. Scrollbar hidden.
+   Body never scrolls; only this scrolls.
+   ============================================================ */
+.device-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  scroll-behavior: smooth;
+  display: flex;
+  flex-direction: column;
+}
+/* Never let sections flex-shrink (e.g. .hero has overflow:hidden, which
+   zeroes its automatic min-height and would collapse it). */
+.device-content > * {
+  flex-shrink: 0;
+}
+.device-content::-webkit-scrollbar {
+  display: none;
+}
+
+/* Phone + iPad-portrait: leave room for the absolute bottom tab bar */
+.device-shell.mode-phone .device-content,
+.device-shell.mode-ipad.orient-portrait .device-content {
+  padding-bottom: 96px;
+}
+/* iPad-landscape (sidebar): no bottom bar, just safe-area + breathing room */
+.device-shell.mode-ipad.orient-landscape .device-content {
+  padding-bottom: max(2rem, env(safe-area-inset-bottom));
+}
+
+/* ============================================================
+   BOTTOM TAB BAR (phone + iPad portrait) — absolute inside screen
+   ============================================================ */
+.tab-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 35;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 8px 8px max(6px, env(safe-area-inset-bottom));
+  background: linear-gradient(
+    to top,
+    rgba(8, 8, 8, 0.98) 0%,
+    rgba(8, 8, 8, 0.88) 70%,
+    rgba(8, 8, 8, 0)
+  );
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+.tab-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 6px 8px;
+  border-radius: 12px;
+  font-size: 0.625rem; /* 10px — six tabs fit on a phone */
+  font-weight: 600;
+  color: rgba(205, 203, 202, 0.45);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+.tab-btn[data-active="true"] {
+  color: var(--accent);
+}
+.tab-btn[data-active="true"] svg {
+  filter: drop-shadow(0 0 6px rgba(212, 21, 20, 0.6));
+}
+.tab-btn svg {
+  width: 22px;
+  height: 22px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .tab-btn:hover {
+    color: rgba(205, 203, 202, 0.85);
+  }
+}
+
+/* ============================================================
+   TYPOGRAPHY — fluid clamp(). Min 14px body, 12px labels.
+   ============================================================ */
+.eyeball {
+  font-size: clamp(0.75rem, 0.7rem + 0.2vw, 0.875rem); /* ≥12px */
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: var(--accent);
+  margin: 0;
+}
+.section-title {
+  font-size: clamp(1.5rem, 1rem + 2vw, 3rem); /* fluid heading */
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--fg);
+  margin: 0.25rem 0 0;
+}
+.section-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+.section-count {
+  font-size: 0.8125rem;
+  color: rgba(205, 203, 202, 0.4);
+}
+.section-divider {
+  margin-bottom: 0.875rem;
+}
+
+/* Buttons — ≥44px tap targets */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 46px;
+  border-radius: 999px;
+  background: linear-gradient(145deg, #e81716 0%, var(--accent) 55%, #a81110 100%);
+  color: #fff;
+  padding: 0 1.5rem;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  box-shadow:
+    0 0 0 1px rgba(212, 21, 20, 0.5),
+    0 6px 20px -8px rgba(212, 21, 20, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+  text-decoration: none;
+  cursor: pointer;
+}
+.btn-primary:active {
+  transform: scale(0.97);
+}
+@media (hover: hover) and (pointer: fine) {
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow:
+      0 0 0 1px rgba(212, 21, 20, 0.6),
+      0 10px 26px -8px rgba(212, 21, 20, 0.85),
+      inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  }
+}
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 46px;
+  border-radius: 999px;
+  padding: 0 1.5rem;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--fg);
+  background: rgba(205, 203, 202, 0.05);
+  border: 1px solid rgba(205, 203, 202, 0.18);
+  backdrop-filter: blur(8px);
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    border-color 0.2s,
+    color 0.2s,
+    background 0.2s;
+}
+.btn-secondary:active {
+  transform: scale(0.97);
+}
+@media (hover: hover) and (pointer: fine) {
+  .btn-secondary:hover {
+    transform: translateY(-1px);
+    border-color: rgba(212, 21, 20, 0.6);
+    color: var(--accent);
+    background: rgba(212, 21, 20, 0.08);
+  }
+}
+.btn-icon {
+  width: 0.9375rem;
+  height: 0.9375rem;
+}
+
+/* Surfaces & accents */
+.crimson-glow {
+  background: radial-gradient(closest-side, rgba(212, 21, 20, 0.4), transparent 70%);
+}
+.chrome-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(205, 203, 202, 0.16), transparent);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* ============================================================
+   HERO
+   ============================================================ */
+.hero {
+  position: relative;
+  overflow: hidden;
+  padding: 0.5rem clamp(1rem, 4vw, 1.5rem) 1.5rem;
+  scroll-margin-top: 4rem;
+}
+.hero-tech-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.hero-webgl-canvas {
+  pointer-events: none;
+}
+.hero-webgl-canvas canvas {
+  pointer-events: auto;
+}
+.hero-tech-bg-fade {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    to bottom,
+    transparent 35%,
+    rgba(8, 8, 8, 0.55) 72%,
+    rgba(8, 8, 8, 0.88) 100%
+  );
+  pointer-events: none;
+}
+.hero-3d-frame-track {
+  background: transparent;
+}
+.hero-tech-fallback {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 70% 55% at 55% 35%, rgba(212, 21, 20, 0.12), transparent 65%),
+    radial-gradient(ellipse 50% 40% at 30% 60%, rgba(205, 203, 202, 0.06), transparent 70%);
+  pointer-events: none;
+}
+.hero-tech-css {
+  position: absolute;
+  inset: -15%;
+  background:
+    radial-gradient(ellipse 45% 40% at 62% 38%, rgba(212, 21, 20, 0.22), transparent 62%),
+    radial-gradient(ellipse 38% 35% at 28% 55%, rgba(205, 203, 202, 0.08), transparent 68%),
+    conic-gradient(
+      from 210deg at 50% 45%,
+      transparent 0deg,
+      rgba(212, 21, 20, 0.06) 80deg,
+      transparent 160deg,
+      rgba(205, 203, 202, 0.05) 240deg,
+      transparent 360deg
+    );
+  animation: hero-tech-drift 28s ease-in-out infinite;
+  pointer-events: none;
+}
+.hero-tech-css-static {
+  animation: none;
+}
+@keyframes hero-tech-drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+  }
+  50% {
+    transform: translate3d(2%, -1.5%, 0) rotate(6deg) scale(1.04);
+  }
+}
+.hero-accent-wash {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: radial-gradient(
+    ellipse 80% 50% at 70% 20%,
+    color-mix(in srgb, var(--project-accent) 18%, transparent),
+    transparent 70%
+  );
+  opacity: 0.85;
+  transition: background 0.45s ease;
+}
+.hero-content {
+  position: relative;
+  z-index: 1;
+  max-width: 880px;
+  margin: 0 auto;
+}
+
+/* Hero top: stacks intro text above the 3D phone on phone/portrait,
+   sits side-by-side on iPad landscape to fill the wider screen. */
+.hero-top {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+.hero-intro {
+  min-width: 0;
+}
+.hero-name {
+  font-size: clamp(1.75rem, 1.2rem + 3vw, 3.25rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.02;
+  color: var(--fg);
+  margin: 0.375rem 0 0;
+}
+.hero-tagline {
+  margin: 0.5rem 0 0;
+  font-size: clamp(0.9375rem, 0.85rem + 0.4vw, 1.125rem);
+  line-height: 1.55;
+  color: rgba(205, 203, 202, 0.6);
+  max-width: 60ch;
+}
+.hero-meta {
+  margin-top: 0.625rem;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.8125rem;
+  color: rgba(205, 203, 202, 0.5);
+}
+.hero-meta-icon {
+  width: 0.9375rem;
+  height: 0.9375rem;
+  color: var(--accent);
+}
+.hero-meta-sep {
+  color: rgba(205, 203, 202, 0.2);
+  margin: 0 0.25rem;
+}
+.hero-meta-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: inherit;
+  text-decoration: none;
+  min-height: 44px;
+  padding: 0.125rem 0;
+}
+@media (hover: hover) and (pointer: fine) {
+  .hero-meta-link:hover {
+    color: var(--fg);
+  }
+}
+.hero-meta-avail {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+.avail-dot-wrap {
+  position: relative;
+  display: inline-flex;
+  width: 0.5rem;
+  height: 0.5rem;
+}
+.avail-dot-ping {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: var(--accent);
+  opacity: 0.7;
+  animation: pulse-ring 1.8s ease-out infinite;
+}
+.avail-dot {
+  position: relative;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: var(--accent);
+}
+/* 3D phone preview — transparent container so the tech background shows
+   through the WebGL canvas. The canvas itself is already transparent. */
+.hero-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.hero-preview-head {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  margin-bottom: 0.5rem;
+  width: 100%;
+  max-width: min(360px, 86vw);
+}
+.hero-preview-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--fg);
+}
+.hero-preview-accent {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+.hero-preview-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: color-mix(in srgb, var(--project-accent) 85%, white);
+}
+.hero-preview-live-dot {
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 999px;
+  background: var(--project-accent);
+  animation: pulse-dot 1.8s ease-in-out infinite;
+}
+.hero-3d-stack {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+.hero-3d-canvas {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+.hero-3d-chunk-loading {
+  width: 100%;
+  height: 100%;
+  min-height: 12rem;
+  background: rgba(8, 8, 8, 0.35);
+  border-radius: 1.5rem;
+}
+.hero-3d-frame {
+  position: relative;
+  /* When max-height clamps, shrink width too so the canvas stays portrait —
+     otherwise the phone looks tiny / "far back" in a wide short box. */
+  width: min(360px, 86vw, calc(62vh * 9 / 18));
+  aspect-ratio: 9 / 18;
+  max-height: 62vh;
+  background: transparent !important;
+  /* intentionally no background/border — transparent over the tech bg */
+}
+.hero-3d-frame canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  background: transparent !important;
+}
+.hero-2d-fallback {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 1.5rem;
+  background: #0a0a0c;
+}
+.hero-2d-unavailable {
+  object-fit: unset;
+  min-height: 12rem;
+}
+.hero-ctas {
+  margin-top: clamp(2rem, 4vw, 3rem);
+  display: flex;
+  gap: 0.75rem;
+}
+/* Equal-width side-by-side CTAs */
+.hero-ctas .btn-primary,
+.hero-ctas .btn-secondary {
+  flex: 1;
+}
+
+/* Picker dots */
+.picker-dots {
+  margin-top: 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+}
+.picker-dot {
+  position: relative;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  background: transparent;
+  flex-shrink: 0;
+}
+.picker-dot::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: rgba(205, 203, 202, 0.25);
+  transform: translate(-50%, -50%);
+  transition:
+    width 0.3s ease,
+    background 0.3s ease;
+}
+.picker-dot.active::after {
+  width: 1.75rem;
+  background: var(--picker-accent, var(--project-accent, var(--accent)));
+}
+@media (hover: hover) and (pointer: fine) {
+  .picker-dot:hover::after {
+    background: rgba(205, 203, 202, 0.45);
+  }
+  .picker-dot.active:hover::after {
+    background: var(--project-accent, var(--accent));
+  }
+}
+
+/* ============================================================
+   SECTIONS — shared padding
+   ============================================================ */
+.projects-section,
+.experience-section,
+.skills-section,
+.contact-section {
+  padding: clamp(1.25rem, 3vw, 2rem) clamp(1rem, 4vw, 1.5rem);
+  scroll-margin-top: 4rem;
+}
+
+/* ============================================================
+   PROJECTS — auto-fit grid: repeat(auto-fit, minmax(280px, 1fr))
+   ============================================================ */
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 0.875rem;
+}
+
+/* Container query context for project cards */
+.project-card {
+  container-type: inline-size;
+  position: relative;
+  cursor: pointer;
+  overflow: hidden;
+  border-radius: 1rem;
+  border: 1px solid rgba(205, 203, 202, 0.1);
+  background: rgba(205, 203, 202, 0.03);
+  padding: 0.875rem;
+  transition:
+    border-color 0.3s,
+    background 0.3s;
+}
+.project-card:hover {
+  border-color: rgba(205, 203, 202, 0.2);
+}
+.project-card.active {
+  border-color: rgba(212, 21, 20, 0.6);
+  background: rgba(212, 21, 20, 0.06);
+  box-shadow:
+    0 0 0 1px rgba(212, 21, 20, 0.5),
+    0 0 26px -6px rgba(212, 21, 20, 0.65);
+}
+.project-card-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+.project-thumb {
+  position: relative;
+  width: 4rem;
+  height: 5rem;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  box-shadow: inset 0 0 0 1px rgba(205, 203, 202, 0.1);
+}
+.project-thumb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.project-thumb-ring {
+  position: absolute;
+  inset: 0;
+  box-shadow: inset 0 0 0 2px var(--accent);
+  border-radius: 0.5rem;
+}
+.project-card-body {
+  flex: 1;
+  min-width: 0;
+}
+.project-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+.project-title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--fg);
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.project-featured {
+  border-radius: 0.25rem;
+  background: rgba(212, 21, 20, 0.15);
+  padding: 0.125rem 0.375rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+}
+.project-platforms {
+  margin-top: 0.375rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+.project-platform {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.1875rem;
+  border-radius: 0.25rem;
+  background: rgba(205, 203, 202, 0.08);
+  padding: 0.1875rem 0.4375rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: rgba(205, 203, 202, 0.6);
+}
+.project-platform-icon {
+  width: 0.625rem;
+  height: 0.625rem;
+}
+.project-tech {
+  margin-top: 0.4375rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+.project-tech-chip {
+  border-radius: 0.25rem;
+  background: rgba(205, 203, 202, 0.05);
+  padding: 0.1875rem 0.4375rem;
+  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  color: rgba(205, 203, 202, 0.55);
+}
+.project-tech-more {
+  padding: 0.1875rem 0.25rem;
+  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  color: rgba(205, 203, 202, 0.35);
+}
+.project-chev {
+  width: 1rem;
+  height: 1rem;
+  margin-top: 0.25rem;
+  flex-shrink: 0;
+  color: rgba(205, 203, 202, 0.3);
+  transition: color 0.2s;
+}
+.project-chev.active {
+  color: var(--accent);
+}
+.project-desc {
+  margin: 0.625rem 0 0;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: rgba(205, 203, 202, 0.55);
+  max-width: 65ch;
+}
+.project-architecture {
+  margin: 0.5rem 0 0;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: rgba(205, 203, 202, 0.48);
+  font-style: italic;
+  max-width: 65ch;
+}
+.project-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  margin-top: 0.625rem;
+}
+.project-links-compact {
+  margin-top: 0.5rem;
+}
+.project-link-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-height: 44px;
+  border-radius: 999px;
+  border: 1px solid rgba(205, 203, 202, 0.15);
+  padding: 0.3125rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgba(205, 203, 202, 0.85);
+  text-decoration: none;
+  transition:
+    border-color 0.2s,
+    color 0.2s,
+    background-color 0.2s;
+}
+.project-link-chip-muted {
+  cursor: default;
+  opacity: 0.75;
+}
+@media (hover: hover) and (pointer: fine) {
+  a.project-link-chip:hover {
+    border-color: var(--project-accent, var(--accent));
+    color: var(--fg);
+    background-color: color-mix(in srgb, var(--project-accent, var(--accent)) 10%, transparent);
+  }
+}
+.project-link-icon {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+.project-expanded {
+  overflow: hidden;
+}
+.store-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+.store-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-height: 36px;
+  border-radius: 999px;
+  border: 1px solid rgba(205, 203, 202, 0.15);
+  padding: 0.3125rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgba(205, 203, 202, 0.8);
+  text-decoration: none;
+  transition:
+    border-color 0.2s,
+    color 0.2s;
+}
+@media (hover: hover) and (pointer: fine) {
+  .store-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+}
+.store-btn-icon {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+.project-showing {
+  margin-top: 0.625rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+.project-showing-dot {
+  width: 0.25rem;
+  height: 0.25rem;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+/* Container query: when a card is wide enough (≥360px), enlarge typography */
+@container (min-width: 360px) {
+  .project-card {
+    padding: 1.125rem;
+    border-radius: 1.125rem;
+  }
+  .project-thumb {
+    width: 5rem;
+    height: 6.25rem;
+    border-radius: 0.625rem;
+  }
+  .project-title {
+    font-size: 1.0625rem;
+  }
+  .project-desc {
+    font-size: 0.9375rem;
+    line-height: 1.65;
+  }
+  .store-btn {
+    font-size: 0.8125rem;
+    padding: 0.375rem 0.875rem;
+  }
+}
+
+/* CV card — the resume, inside the projects grid */
+.cv-card {
+  container-type: inline-size;
+  position: relative;
+  cursor: pointer;
+  overflow: hidden;
+  border-radius: 1rem;
+  border: 1px solid rgba(212, 21, 20, 0.35);
+  background: linear-gradient(135deg, rgba(212, 21, 20, 0.1), rgba(205, 203, 202, 0.03));
+  padding: 0.875rem;
+  transition:
+    border-color 0.3s,
+    background 0.3s;
+  text-decoration: none;
+  display: block;
+}
+.cv-card:hover {
+  border-color: rgba(212, 21, 20, 0.65);
+  background: linear-gradient(135deg, rgba(212, 21, 20, 0.16), rgba(205, 203, 202, 0.04));
+}
+.cv-card-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+.cv-thumb {
+  width: 4rem;
+  height: 5rem;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  box-shadow: inset 0 0 0 1px rgba(205, 203, 202, 0.14);
+  background: #161616;
+}
+.cv-thumb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.cv-card-body {
+  flex: 1;
+  min-width: 0;
+}
+.cv-eyeball {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border-radius: 0.25rem;
+  background: rgba(212, 21, 20, 0.15);
+  padding: 0.125rem 0.375rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+}
+.cv-title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--fg);
+  margin: 0.375rem 0 0;
+}
+.cv-desc {
+  margin: 0.375rem 0 0;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: rgba(205, 203, 202, 0.55);
+}
+.cv-download {
+  margin-top: 0.625rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-height: 36px;
+  width: 100%;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  padding: 0.3125rem 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  box-shadow:
+    0 0 0 1px rgba(212, 21, 20, 0.5),
+    0 0 26px -8px rgba(212, 21, 20, 0.65);
+}
+@container (min-width: 360px) {
+  .cv-card {
+    padding: 1.125rem;
+    border-radius: 1.125rem;
+  }
+  .cv-thumb {
+    width: 5rem;
+    height: 6.25rem;
+    border-radius: 0.625rem;
+  }
+  .cv-title {
+    font-size: 1.0625rem;
+  }
+  .cv-desc {
+    font-size: 0.875rem;
+  }
+}
+
+/* ============================================================
+   EXPERIENCE — timeline cards with accent rail
+   ============================================================ */
+.experience-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 0.875rem;
+}
+.experience-card {
+  position: relative;
+  display: flex;
+  gap: 0.875rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(205, 203, 202, 0.1);
+  background:
+    linear-gradient(155deg, rgba(205, 203, 202, 0.05) 0%, rgba(205, 203, 202, 0.02) 100%);
+  padding: 1.125rem 1.125rem 1.125rem 0.75rem;
+  overflow: hidden;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  .experience-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(205, 203, 202, 0.22);
+    box-shadow: 0 12px 30px -12px rgba(0, 0, 0, 0.7);
+  }
+  .experience-card.experience-current:hover {
+    border-color: rgba(212, 21, 20, 0.65);
+    box-shadow:
+      0 12px 30px -12px rgba(0, 0, 0, 0.7),
+      0 0 26px -8px rgba(212, 21, 20, 0.5);
+  }
+}
+.experience-current {
+  border-color: rgba(212, 21, 20, 0.45);
+  background:
+    linear-gradient(155deg, rgba(212, 21, 20, 0.08) 0%, rgba(212, 21, 20, 0.02) 100%);
+}
+
+/* Timeline rail — dot + vertical line on the left edge */
+.experience-rail {
+  position: relative;
+  flex-shrink: 0;
+  width: 2px;
+  background: rgba(205, 203, 202, 0.1);
+  border-radius: 999px;
+}
+.experience-rail-dot {
+  position: absolute;
+  top: 0.375rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 999px;
+  background: rgba(205, 203, 202, 0.35);
+  box-shadow: 0 0 0 3px rgba(8, 8, 8, 0.8);
+}
+.experience-current .experience-rail {
+  background: linear-gradient(
+    to bottom,
+    rgba(212, 21, 20, 0.6) 0%,
+    rgba(212, 21, 20, 0.15) 100%
+  );
+}
+.experience-current .experience-rail-dot {
+  background: var(--accent);
+  box-shadow:
+    0 0 0 3px rgba(8, 8, 8, 0.8),
+    0 0 10px rgba(212, 21, 20, 0.7);
+  animation: pulse-dot 1.8s ease-in-out infinite;
+}
+
+.experience-card-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.experience-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.experience-head-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  min-width: 0;
+}
+.experience-monogram {
+  flex-shrink: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.625rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9375rem;
+  font-weight: 800;
+  color: var(--fg);
+  background: rgba(205, 203, 202, 0.06);
+  border: 1px solid rgba(205, 203, 202, 0.15);
+  letter-spacing: -0.02em;
+}
+.experience-current .experience-monogram {
+  color: #fff;
+  background: linear-gradient(145deg, rgba(212, 21, 20, 0.3), rgba(212, 21, 20, 0.1));
+  border-color: rgba(212, 21, 20, 0.5);
+}
+.experience-head-text {
+  min-width: 0;
+}
+.experience-role {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--fg);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.experience-company {
+  margin-top: 0.25rem;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+.experience-company-icon {
+  width: 0.75rem;
+  height: 0.75rem;
+  opacity: 0.7;
+}
+.experience-company-sep {
+  color: rgba(205, 203, 202, 0.25);
+}
+.experience-period {
+  flex-shrink: 0;
+  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: rgba(205, 203, 202, 0.6);
+  background: rgba(205, 203, 202, 0.06);
+  border: 1px solid rgba(205, 203, 202, 0.12);
+  padding: 0.25rem 0.5625rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.experience-current .experience-period {
+  color: var(--accent);
+  background: rgba(212, 21, 20, 0.1);
+  border-color: rgba(212, 21, 20, 0.3);
+}
+.experience-location {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: rgba(205, 203, 202, 0.45);
+}
+
+/* Bullet points with custom check markers */
+.experience-points {
+  margin: 0.875rem 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.experience-points li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: rgba(205, 203, 202, 0.62);
+}
+.experience-point-marker {
+  flex-shrink: 0;
+  width: 1.0625rem;
+  height: 1.0625rem;
+  border-radius: 0.3125rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(205, 203, 202, 0.06);
+  border: 1px solid rgba(205, 203, 202, 0.12);
+  margin-top: 0.0625rem;
+}
+.experience-current .experience-point-marker {
+  background: rgba(212, 21, 20, 0.12);
+  border-color: rgba(212, 21, 20, 0.3);
+}
+.experience-point-check {
+  width: 0.5625rem;
+  height: 0.5625rem;
+  color: rgba(205, 203, 202, 0.55);
+}
+.experience-current .experience-point-check {
+  color: var(--accent);
+}
+
+.experience-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  border-radius: 0.25rem;
+  background: rgba(212, 21, 20, 0.15);
+  padding: 0.125rem 0.375rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+}
+.experience-badge-dot {
+  width: 0.3125rem;
+  height: 0.3125rem;
+  border-radius: 999px;
+  background: var(--accent);
+  animation: pulse-dot 1.8s ease-in-out infinite;
+}
+
+/* ============================================================
+   SKILLS — auto-fit grid
+   ============================================================ */
+.skills-group {
+  margin-bottom: 1.125rem;
+}
+.skills-group:last-child {
+  margin-bottom: 0;
+}
+.skills-group-title {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin: 0 0 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(205, 203, 202, 0.45);
+}
+.skills-group-title svg {
+  width: 0.875rem;
+  height: 0.875rem;
+  color: var(--accent);
+}
+.skills-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(104px, 1fr));
+  gap: 0.625rem;
+}
+.skill-chip {
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.375rem;
+  min-height: 44px;
+  border-radius: 0.875rem;
+  padding: 0.875rem 0.5rem;
+  text-align: center;
+  background: rgba(205, 203, 202, 0.04);
+  border: 1px solid rgba(205, 203, 202, 0.1);
+  backdrop-filter: blur(8px);
+  transition:
+    transform 0.2s,
+    border-color 0.2s;
+}
+@media (hover: hover) and (pointer: fine) {
+  .skill-chip:hover {
+    transform: translateY(-2px);
+    border-color: rgba(205, 203, 202, 0.25);
+  }
+  .skill-chip:hover .skill-icon {
+    transform: scale(1.1);
+  }
+}
+.skill-icon {
+  width: 1.75rem;
+  height: 1.75rem;
+  transition: transform 0.2s;
+}
+.skill-icon-fallback {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: rgba(205, 203, 202, 0.6);
+  line-height: 1.75rem;
+  height: 1.75rem;
+}
+.skill-chip-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.27rem;
+  width: 100%;
+}
+.skill-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.25;
+  color: rgba(205, 203, 202, 0.8);
+}
+.skill-used-in {
+  font-size: 0.625rem;
+  font-weight: 500;
+  line-height: 1.35;
+  color: rgba(205, 203, 202, 0.42);
+}
+.skills-details {
+  border: none;
+}
+.skills-details > summary {
+  list-style: none;
+  cursor: pointer;
+  min-height: 44px;
+  align-items: center;
+}
+.skills-details > summary::-webkit-details-marker {
+  display: none;
+}
+.skills-summary {
+  margin-bottom: 0 !important;
+}
+.skills-summary .skills-chevron {
+  width: 0.875rem;
+  height: 0.875rem;
+  margin-left: auto;
+  transition: transform 0.2s ease;
+}
+.skills-details[open] .skills-chevron {
+  transform: rotate(180deg);
+}
+.skills-details .skills-grid {
+  margin-top: 0.5rem;
+}
+
+/* ============================================================
+   ABOUT CONTENT — summary, stats, education (rendered inside the Hero)
+   ============================================================ */
+.hero-about-divider {
+  margin: clamp(1.25rem, 3vw, 1.75rem) 0 1rem;
+}
+.about-body {
+  max-width: 65ch;
+  font-size: clamp(0.9375rem, 0.9rem + 0.2vw, 1.0625rem);
+  line-height: 1.7;
+  color: rgba(205, 203, 202, 0.7);
+}
+.about-body p {
+  margin: 0 0 0.75rem;
+}
+.services-block {
+  margin-top: clamp(1.25rem, 3vw, 1.75rem);
+}
+.services-title {
+  margin-bottom: 0.75rem !important;
+}
+.services-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.625rem;
+}
+.services-card {
+  border-radius: 0.875rem;
+  border: 1px solid rgba(205, 203, 202, 0.1);
+  background: rgba(205, 203, 202, 0.03);
+  padding: 0.875rem 1rem;
+}
+.services-card-title {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--fg);
+}
+.services-card-desc {
+  margin: 0.375rem 0 0;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: rgba(205, 203, 202, 0.58);
+}
+.about-note {
+  color: rgba(205, 203, 202, 0.45) !important;
+  font-size: 0.875rem !important;
+}
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.625rem;
+  margin: 1.125rem 0;
+  max-width: 65ch;
+}
+.stat-card {
+  border-radius: 0.875rem;
+  border: 1px solid rgba(205, 203, 202, 0.1);
+  background: rgba(205, 203, 202, 0.04);
+  padding: 0.75rem 0.875rem;
+}
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--fg);
+  line-height: 1.1;
+}
+.stat-label {
+  margin-top: 0.125rem;
+  font-size: 0.6875rem;
+  line-height: 1.3;
+  color: rgba(205, 203, 202, 0.45);
+}
+.education-list {
+  margin-top: 1.125rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 0.625rem;
+  max-width: 65ch;
+}
+.education-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  border-radius: 0.875rem;
+  border: 1px solid rgba(205, 203, 202, 0.1);
+  background: rgba(205, 203, 202, 0.03);
+  padding: 0.875rem 1rem;
+}
+.education-icon {
+  width: 2.25rem;
+  height: 2.25rem;
+  flex-shrink: 0;
+  border-radius: 0.625rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(212, 21, 20, 0.12);
+  border: 1px solid rgba(212, 21, 20, 0.3);
+  color: var(--accent);
+}
+.education-icon svg {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+.education-school {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--fg);
+  margin: 0;
+}
+.education-detail {
+  margin: 0.125rem 0 0;
+  font-size: 0.8125rem;
+  color: rgba(205, 203, 202, 0.6);
+}
+.education-location {
+  margin: 0.125rem 0 0;
+  font-size: 0.75rem;
+  color: rgba(205, 203, 202, 0.4);
+}
+
+/* ============================================================
+   CONTACT — centered card
+   ============================================================ */
+.contact-section .eyeball,
+.contact-section .section-title {
+  text-align: center;
+}
+.contact-section .section-divider {
+  margin-inline: auto;
+}
+.contact-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.25rem;
+  padding: clamp(1.25rem, 3vw, 1.75rem);
+  background: rgba(205, 203, 202, 0.04);
+  border: 1px solid rgba(205, 203, 202, 0.1);
+  backdrop-filter: blur(8px);
+  max-width: 65ch;
+  margin-inline: auto;
+  text-align: left;
+}
+.contact-glow {
+  position: absolute;
+  top: -2.5rem;
+  right: -2.5rem;
+  width: 8rem;
+  height: 8rem;
+  filter: blur(2rem);
+  pointer-events: none;
+}
+.contact-card-inner {
+  position: relative;
+}
+.contact-text {
+  margin: 0 auto 1.25rem;
+  font-size: clamp(0.9375rem, 0.9rem + 0.2vw, 1.0625rem);
+  line-height: 1.6;
+  color: rgba(205, 203, 202, 0.6);
+  max-width: 50ch;
+  text-align: center;
+}
+
+/* Contact form */
+.contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+.contact-form-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.875rem;
+}
+.contact-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3125rem;
+}
+.contact-field-label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(205, 203, 202, 0.45);
+}
+.contact-input {
+  width: 100%;
+  min-height: 44px;
+  border-radius: 0.625rem;
+  padding: 0.625rem 0.875rem;
+  font-family: inherit;
+  font-size: 0.875rem;
+  color: var(--fg);
+  background: rgba(8, 8, 8, 0.5);
+  border: 1px solid rgba(205, 203, 202, 0.15);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+}
+.contact-input::placeholder {
+  color: rgba(205, 203, 202, 0.3);
+}
+.contact-input:focus {
+  border-color: rgba(212, 21, 20, 0.6);
+  box-shadow: 0 0 0 3px rgba(212, 21, 20, 0.15);
+}
+.contact-textarea {
+  resize: vertical;
+  min-height: 120px;
+  line-height: 1.5;
+}
+.contact-submit {
+  width: 100%;
+  margin-top: 0.25rem;
+}
+
+/* Two-column form row on wider screens */
+.device-shell.mode-ipad.orient-landscape .contact-form-row {
+  grid-template-columns: 1fr 1fr;
+}
+
+.contact-direct {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  margin-bottom: 1rem;
+}
+.contact-direct-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-height: 44px;
+  font-size: 0.875rem;
+  color: rgba(205, 203, 202, 0.75);
+  text-decoration: none;
+}
+@media (hover: hover) and (pointer: fine) {
+  .contact-direct-link:hover {
+    color: var(--accent);
+  }
+}
+.contact-direct-icon {
+  width: 1rem;
+  height: 1rem;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.contact-socials {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(205, 203, 202, 0.08);
+}
+.contact-socials-label {
+  margin: 0 0 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(205, 203, 202, 0.4);
+  text-align: center;
+}
+.contact-socials-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.625rem;
+}
+.contact-social {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 999px;
+  border: 1px solid rgba(205, 203, 202, 0.12);
+  color: rgba(205, 203, 202, 0.85);
+  text-decoration: none;
+  transition:
+    border-color 0.2s,
+    color 0.2s,
+    background-color 0.2s;
+}
+@media (hover: hover) and (pointer: fine) {
+  .contact-social:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background-color: rgba(212, 21, 20, 0.08);
+  }
+}
+.contact-social-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+.footer {
+  margin-top: auto; /* stick to the bottom of the device screen when short */
+  padding: 0.5rem clamp(1rem, 4vw, 1.5rem) max(1.5rem, env(safe-area-inset-bottom));
+  text-align: center;
+}
+.footer-name {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--fg);
+  margin: 0;
+}
+.footer-socials {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin: 0.625rem 0 0;
+}
+.footer-social {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-height: 44px;
+  padding: 0.375rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid rgba(205, 203, 202, 0.12);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgba(205, 203, 202, 0.75);
+  text-decoration: none;
+  transition:
+    border-color 0.2s,
+    color 0.2s,
+    background-color 0.2s;
+}
+@media (hover: hover) and (pointer: fine) {
+  .footer-social:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background-color: rgba(212, 21, 20, 0.08);
+  }
+}
+.footer-social-icon {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+.footer-code-link {
+  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.footer-meta {
+  margin: 0.125rem 0 0;
+  font-size: 0.75rem;
+  color: rgba(205, 203, 202, 0.4);
+}
+.footer-model {
+  margin: 0.25rem 0 0;
+  font-size: 0.6875rem;
+  color: rgba(205, 203, 202, 0.35);
+}
+.footer-code {
+  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
+}
+
+/* ============================================================
+   PHONE LANDSCAPE — short viewport: side-by-side hero + larger phone
+   ============================================================ */
+.device-shell.mode-phone.orient-landscape .hero-top {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+.device-shell.mode-phone.orient-landscape .hero-intro {
+  flex: 1;
+  min-width: 0;
+}
+.device-shell.mode-phone.orient-landscape .hero-preview {
+  flex: 0 0 auto;
+  min-width: 0;
+  max-width: min(42vw, calc(70vh * 9 / 18));
+}
+.device-shell.mode-phone.orient-landscape .hero-3d-frame {
+  width: min(100%, calc(70vh * 9 / 18), 42vw);
+  max-height: 70vh;
+}
+.device-shell.mode-phone.orient-landscape .picker-dots {
+  margin-top: 0.75rem;
+}
+
+/* ============================================================
+   IPAD LANDSCAPE — wider hero (2-col), fill-width stats/education
+   ============================================================ */
+.device-shell.mode-ipad.orient-landscape .hero-content {
+  max-width: 1180px;
+}
+.device-shell.mode-ipad.orient-landscape .hero-top {
+  flex-direction: row;
+  align-items: center;
+  gap: clamp(2rem, 4vw, 3.5rem);
+}
+.device-shell.mode-ipad.orient-landscape .hero-intro {
+  flex: 1.1;
+}
+.device-shell.mode-ipad.orient-landscape .hero-preview {
+  flex: 0.9;
+}
+.device-shell.mode-ipad.orient-landscape .hero-3d-frame {
+  width: min(100%, calc(72vh * 9 / 18));
+  max-height: 72vh;
+}
+/* Extra clearance below the tall 3D phone so the CTA buttons don't crowd it */
+.device-shell.mode-ipad.orient-landscape .hero-ctas {
+  margin-top: clamp(2.5rem, 5vw, 4rem);
+}
+/* Let stats + education spread across the wider landscape column */
+.device-shell.mode-ipad.orient-landscape .stats-row {
+  max-width: none;
+}
+.device-shell.mode-ipad.orient-landscape .education-list {
+  max-width: none;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+/* Ultra-wide: cap content width and center inside the screen */
+@media (min-width: 1921px) {
+  .device-main {
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+  }
+}
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+@keyframes phone-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+/* ============================================================
+   LOCK SCREEN — iOS/iPadOS-style lock screen with real-time clock
+   ============================================================ */
+.lock-screen {
+  position: absolute;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: clamp(2.5rem, 8vh, 5rem) 1.5rem clamp(1.5rem, 5vh, 3rem);
+  background:
+    radial-gradient(circle at 50% 25%, rgba(212, 21, 20, 0.18), transparent 55%),
+    radial-gradient(circle at 50% 100%, rgba(212, 21, 20, 0.08), transparent 60%),
+    rgba(8, 8, 8, 0.92);
+  backdrop-filter: blur(24px) saturate(1.2);
+  -webkit-backdrop-filter: blur(24px) saturate(1.2);
+  border-radius: inherit;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.lock-screen:active {
+  cursor: grabbing;
+}
+
+/* Ambient glow */
+.lock-glow {
+  position: absolute;
+  top: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  height: 50%;
+  background: radial-gradient(closest-side, rgba(212, 21, 20, 0.25), transparent 70%);
+  filter: blur(40px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Top: lock icon + clock + date */
+.lock-top {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+.lock-icon-row {
+  margin-bottom: 0.5rem;
+}
+.lock-icon {
+  width: 18px;
+  height: 18px;
+  color: rgba(205, 203, 202, 0.5);
+}
+.lock-clock {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.375rem;
+  font-variant-numeric: tabular-nums;
+}
+.lock-time {
+  font-size: clamp(4rem, 16vh, 7.5rem);
+  font-weight: 200;
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  color: #fff;
+  text-shadow: 0 4px 30px rgba(212, 21, 20, 0.3);
+}
+.lock-period {
+  font-size: clamp(1rem, 2.5vh, 1.5rem);
+  font-weight: 500;
+  color: rgba(205, 203, 202, 0.6);
+  margin-top: 0.75rem;
+}
+.lock-date {
+  margin-top: 0.5rem;
+  font-size: clamp(0.9375rem, 2.2vh, 1.125rem);
+  font-weight: 600;
+  color: rgba(205, 203, 202, 0.85);
+  letter-spacing: 0.02em;
+}
+
+/* Middle: owner */
+.lock-middle {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+}
+.lock-owner {
+  font-size: clamp(1.25rem, 3.5vh, 1.75rem);
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+.lock-owner-title {
+  margin-top: 0.25rem;
+  font-size: clamp(0.8125rem, 1.8vh, 0.9375rem);
+  font-weight: 600;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+/* Bottom: slide-to-unlock track */
+.lock-slide-track-wrap {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.875rem;
+  width: 100%;
+  max-width: 340px;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.lock-hint {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.25rem;
+  color: rgba(205, 203, 202, 0.5);
+}
+.lock-hint-icon {
+  width: 18px;
+  height: 18px;
+}
+.lock-hint-text {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+.lock-slide-track {
+  position: relative;
+  width: 100%;
+  height: 52px;
+  border-radius: 999px;
+  background: rgba(205, 203, 202, 0.08);
+  border: 1px solid rgba(205, 203, 202, 0.12);
+  overflow: hidden;
+  touch-action: none;
+}
+.lock-slide-fill {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(212, 21, 20, 0.3), rgba(212, 21, 20, 0.5));
+}
+.lock-slide-knob {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  background: linear-gradient(145deg, var(--accent), #a01110);
+  border: none;
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 4px 14px rgba(212, 21, 20, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  touch-action: none;
+  padding: 0;
+}
+.lock-slide-knob:active {
+  cursor: grabbing;
+}
+.lock-slide-knob-icon {
+  width: 22px;
+  height: 22px;
+  color: #fff;
+}
+@media (hover: hover) and (pointer: fine) {
+  .lock-slide-knob:hover {
+    transform: scale(1.05);
+  }
+}
+.lock-unlock-fallback {
+  background: none;
+  border: none;
+  color: rgba(205, 203, 202, 0.4);
+  font-size: 0.6875rem;
+  font-family: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  padding: 0.5rem;
+}
+.lock-unlock-fallback:hover {
+  color: rgba(205, 203, 202, 0.7);
+}
+
+/* ============================================================
+   2D APP PREVIEW — phone-shaped screenshot frame
+   ============================================================ */
+.app-preview {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  margin: 0 auto;
+}
+.app-preview.hero {
+  width: 150px;
+}
+
+.app-preview-glow {
+  position: absolute;
+  inset: -20%;
+  filter: blur(2rem);
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.app-preview-device {
+  position: relative;
+}
+
+.app-preview-shell {
+  position: relative;
+  overflow: hidden;
+  background: #000;
+  padding: 3px;
+  border-radius: 26px;
+  box-shadow:
+    inset 0 0 0 1px rgba(205, 203, 202, 0.18),
+    0 18px 40px -12px rgba(0, 0, 0, 0.8),
+    0 0 30px -8px rgba(212, 21, 20, 0.4);
+}
+.app-preview.hero .app-preview-shell {
+  width: 144px;
+  border-radius: 26px;
+}
+
+.app-preview-screen {
+  position: relative;
+  overflow: hidden;
+  background: var(--bg);
+}
+.app-preview.hero .app-preview-screen {
+  aspect-ratio: 9 / 19;
+  width: 138px;
+  border-radius: 23px;
+}
+
+.app-preview-notch {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 44px;
+  height: 14px;
+  background: #000;
+  border-radius: 999px;
+  z-index: 20;
+}
+
+.app-preview-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.app-preview-vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.25) 0%,
+    transparent 12%,
+    transparent 88%,
+    rgba(0, 0, 0, 0.3) 100%
+  );
+}

@@ -1,0 +1,54 @@
+Phone 3D Model — License & Attribution
+=======================================
+
+File:        phone.glb
+Format:      Binary glTF 2.0 (.glb)
+Size:        867 KB (887,328 bytes)
+Triangles:   64,229
+Meshes:      31
+Materials:   31 (PBR)
+Textures:    34 (WebP, includes emissive screen)
+Extensions:  KHR_draco_mesh_compression,
+             KHR_materials_emissive_strength,
+             EXT_texture_webp
+
+Model:       Apple iPhone 15 Pro Max (Black / Natural Titanium)
+Author:      polyman (Polyman_3D)
+             https://sketchfab.com/Polyman_3D
+Source:      https://sketchfab.com/3d-models/apple-iphone-15-pro-max-black-df17520841214c1792fb8a44c6783ee7
+             Sketchfab model UID: df17520841214c1792fb8a44c6783ee7
+             (Downloaded via GitHub mirror — identical file used by the
+             popular adrianhajdin/iphone and grep-many/apple-iphone-15
+             repos, both of which carry the same CC-BY-4.0 attribution.)
+
+License:     Creative Commons Attribution 4.0 International (CC-BY 4.0)
+             https://creativecommons.org/licenses/by/4.0/
+
+Attribution (required by CC-BY 4.0):
+  "Apple iPhone 15 Pro Max Black" by polyman (Polyman_3D)
+  is licensed under CC-BY 4.0. To view a copy of this license, visit
+  https://creativecommons.org/licenses/by/4.0/
+
+  Original model page:
+  https://sketchfab.com/3d-models/apple-iphone-15-pro-max-black-df17520841214c1792fb8a44c6783ee7
+
+Notes for developers:
+  - This model uses KHR_draco_mesh_compression. drei's useGLTF
+    (@react-three/drei >= 9) automatically configures the Draco decoder
+    from the gstatic CDN, so no extra setup is needed when loading via
+    useGLTF. If loading with a raw THREE.GLTFLoader, set up a
+    DRACOLoader and point it at https://www.gstatic.com/draco/v1/decoders/.
+  - Textures use the EXT_texture_webp extension (supported by three.js
+    since r137; this project uses r169).
+  - The model is normalized at runtime in GlbPhone.tsx: it is recentered
+    on the origin and scaled so its largest dimension is 3.0 units.
+  - The previous procedurally-generated CC0 phone was backed up to
+    phone.glb.bak.procedural.
+
+Verification:
+  - `file phone.glb`           -> "glTF binary model, version 2"
+  - Magic bytes (first 4)      -> 67 6c 54 46  ("glTF")
+  - MD5                         -> f2318eb62afa488957a5ab24d59ddec3
+  - Sketchfab license (verified via API on 2025-01-xx):
+      slug: "by", label: "CC Attribution", url: CC-BY-4.0
+      isDownloadable: true, downloadCount: 25,983+
