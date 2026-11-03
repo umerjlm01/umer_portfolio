@@ -22,7 +22,16 @@ node_modules
 
 # misc
 .DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
 *.pem
+
+# IDE
+.idea/
+.cursor/*
+!.cursor/rules/
+!.cursor/rules/**
 
 # debug
 npm-debug.log*
@@ -32,6 +41,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -48,7 +58,6 @@ dev.log
 dev.out.log
 test
 prompt
-
 server.log
 # Skills directory
 /skills/
