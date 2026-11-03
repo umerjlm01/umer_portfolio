@@ -2,7 +2,7 @@
 
 import type { ReactNode, RefObject } from "react"
 import { useEffect, useMemo, useRef, useState } from "react"
-import { Canvas, useFrame, useThree } from "@react-three/fiber"
+import { Canvas, useFrame, useThree, type RootState } from "@react-three/fiber"
 import { ContactShadows, Float, PerspectiveCamera, useGLTF, View } from "@react-three/drei"
 import * as THREE from "three"
 import { PHONE_GLB } from "@/lib/portfolio-3d-preload"
@@ -326,6 +326,23 @@ export type HeroWebGLCanvasProps = {
   reducedMotion?: boolean
 }
 
+/**
+ * drei `<View>` disables R3F's default full-canvas render (priority > 0).
+ * Draw the main scene (tech backdrop) before the phone view scissor pass.
+ */
+function HeroBackdropPass() {
+  useFrame((state: RootState) => {
+    const { gl, scene, camera, size } = state
+    const prevAutoClear = gl.autoClear
+    gl.autoClear = true
+    gl.setScissorTest(false)
+    gl.setViewport(0, 0, size.width, size.height)
+    gl.render(scene, camera)
+    gl.autoClear = prevAutoClear
+  }, 1)
+  return null
+}
+
 /** Single WebGL context: full-hero tech backdrop + phone tracked to `.hero-3d-frame`. */
 export default function HeroWebGLCanvas({
   imageSrc,
@@ -372,8 +389,13 @@ export default function HeroWebGLCanvas({
       <pointLight position={[0, 0, 2]} intensity={0.68} color="#D41514" />
 
       <HeroSceneTech reduced={reducedMotion} />
+      <HeroBackdropPass />
 
-      <View track={phoneTrackRef as RefObject<HTMLElement>} frames={Infinity}>
+      <View
+        track={phoneTrackRef as RefObject<HTMLElement>}
+        frames={Infinity}
+        index={2}
+      >
         <PerspectiveCamera makeDefault fov={30} position={[0, 0.1, 5.75]} near={0.1} far={60} />
         <PhoneScene imageSrc={imageSrc} />
       </View>
