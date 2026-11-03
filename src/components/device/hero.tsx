@@ -2,6 +2,7 @@
 
 import type { CSSProperties } from "react"
 import dynamic from "next/dynamic"
+import { useRef } from "react"
 import { motion } from "framer-motion"
 import { ArrowRight, Download, GraduationCap, MapPin, Phone } from "lucide-react"
 import {
@@ -32,6 +33,7 @@ interface HeroProps {
 }
 
 export function Hero({ activeProject, onSelectProject }: HeroProps) {
+  const phoneFrameRef = useRef<HTMLDivElement>(null)
   const autoCycle = usePortfolioStore((s) => s.autoCycle)
   const reducedMotion = usePrefersReducedMotion()
   const webglOk = useWebGLAvailable()
@@ -108,10 +110,11 @@ export function Hero({ activeProject, onSelectProject }: HeroProps) {
                 </span>
               )}
             </div>
-            <div className="hero-3d-frame hero-3d-frame-track">
+            <div ref={phoneFrameRef} className="hero-3d-frame hero-3d-frame-track">
               {webglOk ? (
                 <HeroWebGLCanvas
                   imageSrc={activeProject.screenshot}
+                  eventSource={phoneFrameRef}
                   reducedMotion={reducedMotion}
                 />
               ) : (

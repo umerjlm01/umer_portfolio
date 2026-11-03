@@ -1,9 +1,9 @@
 "use client"
 
-import type { ReactNode } from "react"
+import type { ReactNode, RefObject } from "react"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { Canvas, useFrame, useThree } from "@react-three/fiber"
-import { ContactShadows, PerspectiveCamera, useGLTF } from "@react-three/drei"
+import { ContactShadows, Float, PerspectiveCamera, useGLTF } from "@react-three/drei"
 import * as THREE from "three"
 import { PHONE_GLB } from "@/lib/portfolio-3d-preload"
 import {
@@ -259,6 +259,9 @@ function PhoneModel({ imageSrc }: { imageSrc: string }) {
   return <primitive object={scene} />
 }
 
+const BASE_Y = 0.38
+const MAX_TILT_X = 0.32
+
 function PhoneRig({
   children,
   reducedMotion,
@@ -267,19 +270,30 @@ function PhoneRig({
   reducedMotion: boolean
 }) {
   const group = useRef<THREE.Group>(null)
+  const pointer = useThree((s) => s.pointer)
 
-  useFrame((state) => {
-    if (!group.current || reducedMotion) return
+  useFrame((state, delta) => {
+    if (!group.current) return
+    if (reducedMotion) {
+      group.current.rotation.set(0, BASE_Y, 0)
+      return
+    }
     const t = state.clock.elapsedTime
-    group.current.rotation.y = 0.38 + Math.sin(t * 0.35) * 0.06
-    group.current.rotation.x = Math.sin(t * 0.28) * 0.04
+    const idleY = Math.sin(t * 0.45) * 0.1
+    const idleX = Math.sin(t * 0.3) * 0.04
+    const targetY = BASE_Y + idleY + pointer.x * 0.42
+    const targetX = idleX - pointer.y * 0.2
+    const k = 1 - Math.pow(0.001, delta)
+    group.current.rotation.y += (targetY - group.current.rotation.y) * k
+    group.current.rotation.x += (targetX - group.current.rotation.x) * k
+    group.current.rotation.x = THREE.MathUtils.clamp(
+      group.current.rotation.x,
+      -MAX_TILT_X,
+      MAX_TILT_X
+    )
   })
 
-  return (
-    <group ref={group} rotation={[0, 0.38, 0]}>
-      {children}
-    </group>
-  )
+  return <group ref={group}>{children}</group>
 }
 
 function PhoneScene({
@@ -296,7 +310,14 @@ function PhoneScene({
       <directionalLight position={[-6, 3, -4]} intensity={0.5} color="#f7e8d8" />
       <PhoneRig reducedMotion={reducedMotion}>
         <group position={[0, 0.05, 0]}>
-          <PhoneModel imageSrc={imageSrc} />
+          <Float
+            speed={1.4}
+            rotationIntensity={0.08}
+            floatIntensity={0.35}
+            enabled={!reducedMotion}
+          >
+            <PhoneModel imageSrc={imageSrc} />
+          </Float>
           <ContactShadows
             position={[0, -1.35, 0]}
             opacity={0.55}
@@ -314,12 +335,14 @@ function PhoneScene({
 
 export type HeroWebGLCanvasProps = {
   imageSrc: string
+  eventSource?: RefObject<HTMLElement | null>
   reducedMotion?: boolean
 }
 
 /** WebGL phone preview inside `.hero-3d-frame` (no full-hero canvas / View tracking). */
 export default function HeroWebGLCanvas({
   imageSrc,
+  eventSource,
   reducedMotion = false,
 }: HeroWebGLCanvasProps) {
   const dprMax = useMemo(
@@ -331,6 +354,7 @@ export default function HeroWebGLCanvas({
   return (
     <Canvas
       className="hero-3d-canvas"
+      eventSource={eventSource as RefObject<HTMLElement> | undefined}
       dpr={[1, dprMax]}
       gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
       style={{ width: "100%", height: "100%", touchAction: "none" }}

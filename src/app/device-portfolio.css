@@ -781,6 +781,8 @@ body {
   position: relative;
   z-index: 2;
   isolation: isolate;
+  touch-action: none;
+  cursor: grab;
   /* When max-height clamps, shrink width too so the canvas stays portrait —
      otherwise the phone looks tiny / "far back" in a wide short box. */
   width: min(360px, 86vw, calc(62vh * 9 / 18));
@@ -794,6 +796,11 @@ body {
   width: 100% !important;
   height: 100% !important;
   background: transparent !important;
+  pointer-events: auto;
+  cursor: grab;
+}
+.hero-3d-frame:active canvas {
+  cursor: grabbing;
 }
 .hero-2d-fallback {
   width: 100%;
