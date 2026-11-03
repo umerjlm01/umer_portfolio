@@ -124,7 +124,7 @@ export function HeroSceneTech({
   return (
     <group position={layout.position} scale={layout.scale}>
       <TechCore reduced={reduced} accent={accent} />
-      {!lowEnd && !reduced && <Particles count={100} accent={accent} />}
+      {!lowEnd && !reduced && <Particles count={140} accent={accent} />}
     </group>
   )
 }

@@ -1,6 +1,6 @@
 "use client"
 
-import type { CSSProperties } from "react"
+import type { CSSProperties, KeyboardEvent } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 import { ChevronRight, Smartphone } from "lucide-react"
 import { projects, type Project } from "@/lib/portfolio-data"
@@ -14,12 +14,20 @@ interface ProjectsProps {
 export function Projects({ activeProject, onSelectProject }: ProjectsProps) {
   const stopProp = (e: { stopPropagation: () => void }) => e.stopPropagation()
 
+  const onCardKeyDown = (e: KeyboardEvent<HTMLElement>, p: Project) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault()
+      onSelectProject(p)
+    }
+  }
+
   return (
     <section id="projects" className="projects-section">
       <div className="section-head">
         <div>
           <p className="eyeball">Selected work</p>
           <h2 className="section-title">Projects</h2>
+          <p className="section-hint">Tap a card to expand and preview it on the hero.</p>
         </div>
         <span className="section-count">{projects.length} apps</span>
       </div>
@@ -28,6 +36,8 @@ export function Projects({ activeProject, onSelectProject }: ProjectsProps) {
       <div className="projects-grid">
         {projects.map((p) => {
           const isActive = p.id === activeProject.id
+          const stacksShown = isActive ? p.stack : p.stack.slice(0, 4)
+
           return (
             <motion.article
               key={p.id}
@@ -36,14 +46,22 @@ export function Projects({ activeProject, onSelectProject }: ProjectsProps) {
               viewport={{ once: true, margin: "-40px" }}
               transition={{ duration: 0.4 }}
               onClick={() => onSelectProject(p)}
+              onKeyDown={(e) => onCardKeyDown(e, p)}
+              tabIndex={0}
+              role="button"
+              aria-expanded={isActive}
+              aria-label={`${p.shortName}. ${isActive ? "Expanded" : "Tap to expand"}`}
               className={isActive ? "project-card active" : "project-card"}
               style={
-                isActive
-                  ? ({
-                      borderColor: `${p.accent}99`,
-                      boxShadow: `0 0 0 1px ${p.accent}80, 0 0 26px -6px ${p.accent}55`,
-                    } as CSSProperties)
-                  : undefined
+                {
+                  ["--card-accent" as string]: p.accent,
+                  ...(isActive
+                    ? {
+                        borderColor: `${p.accent}99`,
+                        boxShadow: `0 0 0 1px ${p.accent}80, 0 0 26px -6px ${p.accent}55`,
+                      }
+                    : {}),
+                } as CSSProperties
               }
             >
               <div className="project-card-top">
@@ -66,6 +84,9 @@ export function Projects({ activeProject, onSelectProject }: ProjectsProps) {
                     <h3 className="project-title">{p.shortName}</h3>
                     {isActive && <span className="project-featured">On screen</span>}
                   </div>
+                  {!isActive && (
+                    <p className="project-name-full">{p.name}</p>
+                  )}
                   <div className="project-platforms">
                     <span className="project-platform">
                       <Smartphone className="project-platform-icon" aria-hidden />
@@ -73,13 +94,15 @@ export function Projects({ activeProject, onSelectProject }: ProjectsProps) {
                     </span>
                   </div>
                   <div className="project-tech">
-                    {p.stack.slice(0, 3).map((t) => (
+                    {stacksShown.map((t) => (
                       <span key={t} className="project-tech-chip">
                         {t}
                       </span>
                     ))}
-                    {p.stack.length > 3 && (
-                      <span className="project-tech-more">+{p.stack.length - 3}</span>
+                    {!isActive && p.stack.length > 4 && (
+                      <span className="project-tech-more">
+                        +{p.stack.length - 4}
+                      </span>
                     )}
                   </div>
                 </div>
@@ -88,34 +111,48 @@ export function Projects({ activeProject, onSelectProject }: ProjectsProps) {
                   aria-hidden
                 />
               </div>
-              <p className="project-desc">{p.description}</p>
 
-              {p.architectureLine && (
-                <p className="project-architecture">{p.architectureLine}</p>
+              {!isActive && (
+                <p className="project-expand-hint">
+                  Tap for details
+                  <ChevronRight className="project-expand-hint-icon" aria-hidden />
+                </p>
               )}
 
-              <ProjectLinks project={p} onLinkClick={stopProp} compact />
-
-              <AnimatePresence>
+              <AnimatePresence initial={false}>
                 {isActive && (
                   <motion.div
-                    initial={{ opacity: 0, height: 0, marginTop: 0 }}
-                    animate={{ opacity: 1, height: "auto", marginTop: 10 }}
-                    exit={{ opacity: 0, height: 0, marginTop: 0 }}
-                    transition={{ duration: 0.25 }}
-                    className="project-expanded"
+                    key="details"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.28, ease: "easeOut" }}
+                    className="project-details"
                   >
-                    <ul
-                      className="experience-points"
-                      style={{ marginTop: 0, paddingLeft: "1rem" }}
-                    >
-                      {p.highlights.slice(0, 3).map((h) => (
-                        <li key={h}>{h}</li>
-                      ))}
-                    </ul>
+                    <p className="project-tagline">{p.tagline}</p>
+                    <p className="project-desc">{p.description}</p>
+
+                    {p.architectureLine && (
+                      <p className="project-architecture">{p.architectureLine}</p>
+                    )}
+
+                    <div className="project-highlights-wrap">
+                      <p className="project-highlights-title">Highlights</p>
+                      <ul className="experience-points project-highlights">
+                        {p.highlights.map((h) => (
+                          <li key={h}>{h}</li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <ProjectLinks project={p} onLinkClick={stopProp} />
+
                     <span className="project-showing">
-                      Showing on screen
-                      <span className="project-showing-dot" />
+                      Showing on hero preview
+                      <span
+                        className="project-showing-dot"
+                        style={{ background: p.accent }}
+                      />
                     </span>
                   </motion.div>
                 )}
