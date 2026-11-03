@@ -3,6 +3,8 @@ export const profile = {
   shortName: "Umer",
   role: "Mobile Application Developer",
   tagline: "Flutter Developer",
+  heroTagline:
+    "I build and ship Flutter apps for Android and iOS: networking, e-commerce, realtime chat, and subscriptions.",
   location: "Lahore, Punjab, Pakistan",
   phone: "+92 334-5558580",
   phoneHref: "+923345558580",
@@ -13,9 +15,9 @@ export const profile = {
   githubLabel: "umerjlm01",
   cvUrl: "/portfolio/resume.pdf",
   summary:
-    "Flutter developer with 1+ years of experience shipping cross-platform apps for Android and iOS — professional networking, e-commerce, real-time chat, lottery operations, and AI styling with subscriptions.",
+    "Flutter developer with 1+ years of experience shipping cross-platform apps for Android and iOS. Work includes professional networking, e-commerce, realtime chat, lottery operations, and AI styling with subscriptions.",
   summaryExtra:
-    "Comfortable across the stack: Bloc and Clean Architecture on the client, Firebase and Supabase on the backend, plus RevenueCat, payment gateways, FCM, deep linking, and ZegoCloud for calls. I own features end-to-end, from UI polish to API integration and store releases.",
+    "Comfortable across the stack: Bloc and Clean Architecture on the client, Firebase and Supabase on the backend, plus RevenueCat, payment gateways, FCM, deep linking, and ZegoCloud for calls. I own features end to end, from UI polish to API integration and store releases.",
 }
 
 export const stats = [
@@ -66,7 +68,7 @@ export const projects: Project[] = [
     ],
     stack: ["Flutter", "Firebase", "OAuth", "Deep Linking", "Payments", "Analytics"],
     screenshot: "/portfolio/screens/pantsuit-professionals.png",
-    accent: "#e0a84f",
+    accent: "#dda0b5",
     architectureLine:
       "Flutter + Firebase auth/analytics with OAuth, deep-linked membership flows, and gateway-backed subscriptions.",
     links: {
@@ -82,7 +84,7 @@ export const projects: Project[] = [
     category: "Lottery & Payments",
     tagline: "Lottery app built from scratch",
     description:
-      "A lottery mobile application developed from scratch in Flutter — sortitions, play validation, full ticket lifecycle management, and prepaid bill payments.",
+      "A lottery mobile application developed from scratch in Flutter: sortitions, play validation, full ticket lifecycle management, and prepaid bill payments.",
     highlights: [
       "Dynamic sortition system with play validations",
       "Full ticket lifecycle: create, delete, duplicate & monitor",
@@ -92,7 +94,7 @@ export const projects: Project[] = [
     ],
     stack: ["Flutter", "REST API", "Payments", "Clean Architecture", "Dio"],
     screenshot: "/portfolio/screens/cnp-lottio.png",
-    accent: "#f5c451",
+    accent: "#5da8e8",
     architectureLine:
       "Clean Architecture with Dio REST sync, ticket lifecycle domain logic, and shared payment rails with the web platform.",
   },
@@ -105,7 +107,7 @@ export const projects: Project[] = [
     description:
       "An AI styling app that matches outfits from photos, monetized through RevenueCat subscriptions and consumable match packs.",
     highlights: [
-      "RevenueCat IAP: Silver / Gold / Platinum / Diamond tiers, monthly–annual",
+      "RevenueCat IAP: Silver / Gold / Platinum / Diamond tiers, monthly and annual",
       "Consumable match packs with coupon & referral discounts",
       "FCM + local notifications, deep-link referrals",
       "Photo-based matching & in-store overlay match UI",
@@ -113,7 +115,7 @@ export const projects: Project[] = [
     ],
     stack: ["Flutter", "RevenueCat", "IAP", "FCM", "Deep Linking", "StoreKit"],
     screenshot: "/portfolio/screens/agile-styling.png",
-    accent: "#c96f4a",
+    accent: "#ef8fab",
     architectureLine:
       "Bloc-driven UI with RevenueCat subscription tiers, referral deep links, and FCM for retention.",
     links: {
@@ -140,7 +142,7 @@ export const projects: Project[] = [
     ],
     stack: ["Flutter", "Supabase", "Dio", "ZegoCloud", "Bloc", "FCM"],
     screenshot: "/portfolio/screens/wardrobe-chat.png",
-    accent: "#3ad08f",
+    accent: "#c9ad8a",
     architectureLine:
       "Bloc + Streams over Supabase and Dio, ZegoCloud for calls, and Edge Functions for push.",
   },
@@ -162,7 +164,7 @@ export const services = [
   {
     title: "Auth, payments & subscriptions",
     description:
-      "OAuth, RevenueCat and gateway integrations, memberships, and consumable IAP — tested on real devices.",
+      "OAuth, RevenueCat and gateway integrations, memberships, and consumable IAP tested on real devices.",
   },
   {
     title: "Realtime & backend integration",
@@ -172,7 +174,7 @@ export const services = [
   {
     title: "Maintainable architecture",
     description:
-      "Bloc, Clean Architecture, and performance work — caching, async pipelines, and clear module boundaries.",
+      "Bloc, Clean Architecture, and performance work: caching, async pipelines, and clear module boundaries.",
   },
 ]
 
@@ -180,19 +182,19 @@ export const experience = [
   {
     role: "Flutter Developer",
     company: "Rev9 Solutions",
-    period: "11/2025 — Present",
+    period: "Nov 2025 to Present",
     location: "Jhelum, Punjab",
     current: true,
     points: [
       "Ship and maintain Flutter features for production apps (networking, styling, lottery) used by real customers on Google Play and internal deployments.",
-      "Integrate REST APIs, payments, and analytics end-to-end — fewer handoffs between UI, business logic, and backend contracts.",
+      "Integrate REST APIs, payments, and analytics end to end with fewer handoffs between UI, business logic, and backend contracts.",
       "Improve reliability and performance by tightening async flows, fixing integration edge cases, and keeping architecture easy to extend.",
     ],
   },
   {
     role: "Flutter Intern",
     company: "Rev9 Solutions",
-    period: "08/2025 — 10/2025",
+    period: "Aug 2025 to Oct 2025",
     location: "Jhelum, Punjab",
     current: false,
     points: [

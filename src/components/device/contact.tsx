@@ -19,7 +19,7 @@ export function Contact() {
       "",
       message,
       "",
-      `— Sent from ${profile.name}'s portfolio`,
+      `Sent from ${profile.name}'s portfolio`,
     ].join("\n")
 
     const gmailUrl =
@@ -56,7 +56,7 @@ export function Contact() {
         <div className="contact-card-inner">
           <p className="contact-text">
             I&apos;m taking on select freelance mobile projects. Tell me about
-            yours — I usually reply within a day.
+            yours. I usually reply within a day.
           </p>
 
           <div className="contact-direct">

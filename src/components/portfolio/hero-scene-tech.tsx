@@ -6,7 +6,7 @@ import * as THREE from "three"
 import { useDeviceMode } from "@/hooks/use-device-mode"
 import { useIsLowEndDevice } from "@/hooks/use-is-low-end-device"
 
-function TechCore({ reduced }: { reduced: boolean }) {
+function TechCore({ reduced, accent }: { reduced: boolean; accent: string }) {
   const group = useRef<THREE.Group>(null)
   const knot = useRef<THREE.Mesh>(null)
   const core = useRef<THREE.Mesh>(null)
@@ -33,7 +33,7 @@ function TechCore({ reduced }: { reduced: boolean }) {
           color="#CDCBCA"
           wireframe
           transparent
-          opacity={0.22}
+          opacity={0.28}
           metalness={0.6}
           roughness={0.4}
         />
@@ -41,8 +41,8 @@ function TechCore({ reduced }: { reduced: boolean }) {
       <mesh ref={core}>
         <icosahedronGeometry args={[0.42, 0]} />
         <meshStandardMaterial
-          color="#D41514"
-          emissive="#D41514"
+          color={accent}
+          emissive={accent}
           emissiveIntensity={1.8}
           roughness={0.35}
           metalness={0.2}
@@ -67,7 +67,7 @@ function TechCore({ reduced }: { reduced: boolean }) {
   )
 }
 
-function Particles({ count }: { count: number }) {
+function Particles({ count, accent }: { count: number; accent: string }) {
   const positions = useMemo(() => {
     const arr = new Float32Array(count * 3)
     for (let i = 0; i < count; i++) {
@@ -89,7 +89,7 @@ function Particles({ count }: { count: number }) {
         <bufferAttribute attach="attributes-position" args={[positions, 3]} />
       </bufferGeometry>
       <pointsMaterial
-        color="#D41514"
+        color={accent}
         size={0.028}
         transparent
         opacity={0.55}
@@ -100,8 +100,14 @@ function Particles({ count }: { count: number }) {
   )
 }
 
-/** Full-hero decorative tech — sits in the main viewport behind HTML content. */
-export function HeroSceneTech({ reduced }: { reduced: boolean }) {
+/** Decorative tech backdrop for the hero (separate canvas behind the phone). */
+export function HeroSceneTech({
+  reduced,
+  accent = "#d41514",
+}: {
+  reduced: boolean
+  accent?: string
+}) {
   const { mode, orientation } = useDeviceMode()
   const lowEnd = useIsLowEndDevice()
 
@@ -117,8 +123,8 @@ export function HeroSceneTech({ reduced }: { reduced: boolean }) {
 
   return (
     <group position={layout.position} scale={layout.scale}>
-      <TechCore reduced={reduced} />
-      {!lowEnd && !reduced && <Particles count={140} />}
+      <TechCore reduced={reduced} accent={accent} />
+      {!lowEnd && !reduced && <Particles count={100} accent={accent} />}
     </group>
   )
 }

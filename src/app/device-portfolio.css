@@ -21,9 +21,10 @@
 
 :root {
   --bg: #080808;
-  --fg: #CDCBCA;
-  --accent: #D41514;
-  --project-accent: #D41514;
+  --fg: #cdcbcb;
+  --accent: #d41514;
+  --portfolio-accent: #d41514;
+  --project-accent: #d41514;
   color-scheme: dark;
 }
 
@@ -438,16 +439,19 @@ body {
   margin-bottom: 0.875rem;
 }
 
-/* Buttons — ≥44px tap targets */
-.btn-primary {
+/* Buttons — ≥44px tap targets (scoped so Tailwind base/link styles do not win) */
+.device-shell .btn-primary,
+.device-shell a.btn-primary,
+.device-shell button.btn-primary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
   min-height: 46px;
   border-radius: 999px;
-  background: linear-gradient(145deg, #e81716 0%, var(--accent) 55%, #a81110 100%);
-  color: #fff;
+  border: none;
+  background: linear-gradient(145deg, #e81716 0%, var(--portfolio-accent) 55%, #a81110 100%);
+  color: #ffffff;
   padding: 0 1.5rem;
   font-size: 0.9375rem;
   font-weight: 700;
@@ -460,11 +464,12 @@ body {
   text-decoration: none;
   cursor: pointer;
 }
-.btn-primary:active {
+.device-shell .btn-primary:active {
   transform: scale(0.97);
 }
 @media (hover: hover) and (pointer: fine) {
-  .btn-primary:hover {
+  .device-shell .btn-primary:hover {
+    color: #ffffff;
     transform: translateY(-1px);
     box-shadow:
       0 0 0 1px rgba(212, 21, 20, 0.6),
@@ -472,7 +477,9 @@ body {
       inset 0 1px 0 rgba(255, 255, 255, 0.22);
   }
 }
-.btn-secondary {
+.device-shell .btn-secondary,
+.device-shell a.btn-secondary,
+.device-shell button.btn-secondary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -495,14 +502,14 @@ body {
     color 0.2s,
     background 0.2s;
 }
-.btn-secondary:active {
+.device-shell .btn-secondary:active {
   transform: scale(0.97);
 }
 @media (hover: hover) and (pointer: fine) {
-  .btn-secondary:hover {
+  .device-shell .btn-secondary:hover {
     transform: translateY(-1px);
     border-color: rgba(212, 21, 20, 0.6);
-    color: var(--accent);
+    color: var(--portfolio-accent);
     background: rgba(212, 21, 20, 0.08);
   }
 }
@@ -542,11 +549,8 @@ body {
   pointer-events: none;
   overflow: hidden;
 }
-.hero-webgl-canvas {
-  pointer-events: none;
-}
-.hero-webgl-canvas canvas {
-  pointer-events: auto;
+.hero-tech-webgl {
+  z-index: 0;
 }
 .hero-tech-bg-fade {
   position: absolute;
@@ -604,14 +608,17 @@ body {
 .hero-accent-wash {
   position: absolute;
   inset: 0;
-  z-index: 2;
+  z-index: 1;
   background: radial-gradient(
     ellipse 80% 50% at 70% 20%,
-    color-mix(in srgb, var(--project-accent) 18%, transparent),
+    color-mix(in srgb, var(--project-accent) 22%, transparent),
     transparent 70%
   );
-  opacity: 0.85;
-  transition: background 0.45s ease;
+  opacity: 0.72;
+  transition:
+    background 0.5s ease,
+    opacity 0.5s ease;
+  pointer-events: none;
 }
 .hero-content {
   position: relative;
@@ -705,6 +712,8 @@ body {
 /* 3D phone preview — transparent container so the tech background shows
    through the WebGL canvas. The canvas itself is already transparent. */
 .hero-preview {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -757,6 +766,7 @@ body {
 }
 .hero-3d-canvas {
   position: relative;
+  z-index: 1;
   width: 100%;
   height: 100%;
 }
@@ -769,6 +779,8 @@ body {
 }
 .hero-3d-frame {
   position: relative;
+  z-index: 2;
+  isolation: isolate;
   /* When max-height clamps, shrink width too so the canvas stays portrait —
      otherwise the phone looks tiny / "far back" in a wide short box. */
   width: min(360px, 86vw, calc(62vh * 9 / 18));
@@ -831,7 +843,7 @@ body {
   width: 0.5rem;
   height: 0.5rem;
   border-radius: 999px;
-  background: rgba(205, 203, 202, 0.25);
+  background: color-mix(in srgb, var(--picker-accent, #cdcbcb) 38%, transparent);
   transform: translate(-50%, -50%);
   transition:
     width 0.3s ease,
@@ -939,13 +951,13 @@ body {
 }
 .project-featured {
   border-radius: 0.25rem;
-  background: rgba(212, 21, 20, 0.15);
+  background: color-mix(in srgb, var(--project-accent) 20%, transparent);
   padding: 0.125rem 0.375rem;
   font-size: 0.625rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--accent);
+  color: var(--project-accent);
 }
 .project-platforms {
   margin-top: 0.375rem;
@@ -1096,13 +1108,13 @@ body {
   gap: 0.25rem;
   font-size: 0.75rem;
   font-weight: 600;
-  color: var(--accent);
+  color: var(--project-accent);
 }
 .project-showing-dot {
   width: 0.25rem;
   height: 0.25rem;
   border-radius: 999px;
-  background: var(--accent);
+  background: var(--project-accent);
 }
 
 /* Container query: when a card is wide enough (≥360px), enlarge typography */

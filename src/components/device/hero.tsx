@@ -2,7 +2,6 @@
 
 import type { CSSProperties } from "react"
 import dynamic from "next/dynamic"
-import { useRef } from "react"
 import { motion } from "framer-motion"
 import { ArrowRight, Download, GraduationCap, MapPin, Phone } from "lucide-react"
 import {
@@ -18,6 +17,10 @@ import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion"
 import { useWebGLAvailable } from "@/hooks/use-is-low-end-device"
 import { HeroPhoneFallback } from "./hero-phone-fallback"
 
+const HeroTechCanvas = dynamic(
+  () => import("@/components/portfolio/hero-tech-canvas"),
+  { ssr: false }
+)
 const HeroWebGLCanvas = dynamic(
   () => import("@/components/portfolio/hero-webgl-canvas"),
   { ssr: false }
@@ -29,25 +32,21 @@ interface HeroProps {
 }
 
 export function Hero({ activeProject, onSelectProject }: HeroProps) {
-  const heroRef = useRef<HTMLElement>(null)
-  const phoneFrameRef = useRef<HTMLDivElement>(null)
   const autoCycle = usePortfolioStore((s) => s.autoCycle)
   const reducedMotion = usePrefersReducedMotion()
   const webglOk = useWebGLAvailable()
   const showLiveBadge = autoCycle && !reducedMotion
 
   return (
-    <section ref={heroRef} id="top" className="hero">
+    <section id="top" className="hero">
       <div className="hero-tech-bg" aria-hidden>
         {webglOk ? (
-          <HeroWebGLCanvas
-            imageSrc={activeProject.screenshot}
-            eventSource={heroRef}
-            phoneTrackRef={phoneFrameRef}
+          <HeroTechCanvas
             reducedMotion={reducedMotion}
+            accent={activeProject.accent}
           />
         ) : (
-          <div className="hero-tech-fallback hero-tech-fallback-animate" />
+          <div className="hero-tech-fallback" />
         )}
         <div className="hero-tech-bg-fade" />
         <div className="hero-accent-wash" aria-hidden />
@@ -63,10 +62,7 @@ export function Hero({ activeProject, onSelectProject }: HeroProps) {
           >
             <p className="eyeball">{profile.role}</p>
             <h1 className="hero-name">{profile.name}</h1>
-            <p className="hero-tagline">
-              {profile.tagline} building production apps for Android &amp; iOS — networking,
-              commerce, realtime chat, and subscription products.
-            </p>
+            <p className="hero-tagline">{profile.heroTagline}</p>
             <div className="hero-meta">
               <MapPin className="hero-meta-icon" aria-hidden />
               <span>{profile.location}</span>
@@ -112,8 +108,13 @@ export function Hero({ activeProject, onSelectProject }: HeroProps) {
                 </span>
               )}
             </div>
-            <div ref={phoneFrameRef} className="hero-3d-frame hero-3d-frame-track">
-              {!webglOk && (
+            <div className="hero-3d-frame hero-3d-frame-track">
+              {webglOk ? (
+                <HeroWebGLCanvas
+                  imageSrc={activeProject.screenshot}
+                  reducedMotion={reducedMotion}
+                />
+              ) : (
                 <HeroPhoneFallback
                   screenshot={activeProject.screenshot}
                   alt={`${activeProject.name} screenshot`}
@@ -132,9 +133,7 @@ export function Hero({ activeProject, onSelectProject }: HeroProps) {
                     aria-pressed={isActive}
                     className={isActive ? "picker-dot active" : "picker-dot"}
                     style={
-                      isActive
-                        ? ({ ["--picker-accent" as string]: p.accent } as CSSProperties)
-                        : undefined
+                      { ["--picker-accent" as string]: p.accent } as CSSProperties
                     }
                   />
                 )

@@ -1,9 +1,9 @@
 "use client"
 
-import type { ReactNode, RefObject } from "react"
+import type { ReactNode } from "react"
 import { useEffect, useMemo, useRef, useState } from "react"
-import { Canvas, useFrame, useThree, type RootState } from "@react-three/fiber"
-import { ContactShadows, Float, PerspectiveCamera, useGLTF, View } from "@react-three/drei"
+import { Canvas, useFrame, useThree } from "@react-three/fiber"
+import { ContactShadows, PerspectiveCamera, useGLTF } from "@react-three/drei"
 import * as THREE from "three"
 import { PHONE_GLB } from "@/lib/portfolio-3d-preload"
 import {
@@ -11,7 +11,6 @@ import {
   isPortfolioScreenshot,
   preloadScreenshot,
 } from "@/lib/screenshot-cache"
-import { HeroSceneTech } from "./hero-scene-tech"
 
 const SCREEN_NAME_RE = /screen|display|lcd/i
 
@@ -260,57 +259,51 @@ function PhoneModel({ imageSrc }: { imageSrc: string }) {
   return <primitive object={scene} />
 }
 
-function PhoneRig({ children }: { children: ReactNode }) {
+function PhoneRig({
+  children,
+  reducedMotion,
+}: {
+  children: ReactNode
+  reducedMotion: boolean
+}) {
   const group = useRef<THREE.Group>(null)
-  const pointer = useThree((s) => s.pointer)
 
-  useFrame((state, delta) => {
-    if (!group.current) return
+  useFrame((state) => {
+    if (!group.current || reducedMotion) return
     const t = state.clock.elapsedTime
-    const idleY = Math.sin(t * 0.45) * 0.16
-    const idleX = Math.sin(t * 0.3) * 0.045
-    const targetY = idleY + pointer.x * 0.5
-    const targetX = idleX - pointer.y * 0.22
-    const k = 1 - Math.pow(0.001, delta)
-    group.current.rotation.y += (targetY - group.current.rotation.y) * k
-    group.current.rotation.x += (targetX - group.current.rotation.x) * k
+    group.current.rotation.y = 0.38 + Math.sin(t * 0.35) * 0.06
+    group.current.rotation.x = Math.sin(t * 0.28) * 0.04
   })
 
-  return <group ref={group}>{children}</group>
+  return (
+    <group ref={group} rotation={[0, 0.38, 0]}>
+      {children}
+    </group>
+  )
 }
 
-function PhoneScene({ imageSrc }: { imageSrc: string }) {
+function PhoneScene({
+  imageSrc,
+  reducedMotion,
+}: {
+  imageSrc: string
+  reducedMotion: boolean
+}) {
   return (
     <>
       <ambientLight intensity={0.55} />
       <directionalLight position={[4, 6, 6]} intensity={1.15} />
       <directionalLight position={[-6, 3, -4]} intensity={0.5} color="#f7e8d8" />
-      <pointLight
-        position={[0, 1.5, 4.5]}
-        intensity={12}
-        distance={12}
-        decay={2}
-        color="#ffffff"
-      />
-      <spotLight
-        position={[0, 6, 2]}
-        angle={0.5}
-        penumbra={1}
-        intensity={40}
-        color="#ffe9d6"
-      />
-      <PhoneRig>
-        <group position={[0, 0.05, 0]} rotation={[0, 0.38, 0]}>
-          <Float speed={1.6} rotationIntensity={0.12} floatIntensity={0.4}>
-            <PhoneModel imageSrc={imageSrc} />
-          </Float>
+      <PhoneRig reducedMotion={reducedMotion}>
+        <group position={[0, 0.05, 0]}>
+          <PhoneModel imageSrc={imageSrc} />
           <ContactShadows
             position={[0, -1.35, 0]}
-            opacity={0.62}
+            opacity={0.55}
             scale={6.5}
-            blur={2.6}
+            blur={2.4}
             far={3.2}
-            resolution={256}
+            resolution={128}
             color="#000000"
           />
         </group>
@@ -321,33 +314,12 @@ function PhoneScene({ imageSrc }: { imageSrc: string }) {
 
 export type HeroWebGLCanvasProps = {
   imageSrc: string
-  eventSource: RefObject<HTMLElement | null>
-  phoneTrackRef: RefObject<HTMLElement | null>
   reducedMotion?: boolean
 }
 
-/**
- * drei `<View>` disables R3F's default full-canvas render (priority > 0).
- * Draw the main scene (tech backdrop) before the phone view scissor pass.
- */
-function HeroBackdropPass() {
-  useFrame((state: RootState) => {
-    const { gl, scene, camera, size } = state
-    const prevAutoClear = gl.autoClear
-    gl.autoClear = true
-    gl.setScissorTest(false)
-    gl.setViewport(0, 0, size.width, size.height)
-    gl.render(scene, camera)
-    gl.autoClear = prevAutoClear
-  }, 1)
-  return null
-}
-
-/** Single WebGL context: full-hero tech backdrop + phone tracked to `.hero-3d-frame`. */
+/** WebGL phone preview inside `.hero-3d-frame` (no full-hero canvas / View tracking). */
 export default function HeroWebGLCanvas({
   imageSrc,
-  eventSource,
-  phoneTrackRef,
   reducedMotion = false,
 }: HeroWebGLCanvasProps) {
   const dprMax = useMemo(
@@ -358,19 +330,14 @@ export default function HeroWebGLCanvas({
 
   return (
     <Canvas
-      className="hero-webgl-canvas"
-      eventSource={eventSource as RefObject<HTMLElement>}
+      className="hero-3d-canvas"
       dpr={[1, dprMax]}
       gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
-      style={{
-        position: "absolute",
-        inset: 0,
-        width: "100%",
-        height: "100%",
-        touchAction: "pan-y",
-      }}
-      onCreated={({ gl }) => {
+      style={{ width: "100%", height: "100%", touchAction: "none" }}
+      frameloop={reducedMotion ? "demand" : "always"}
+      onCreated={({ gl, invalidate }) => {
         gl.setClearColor(0x000000, 0)
+        if (reducedMotion) invalidate()
         const el = gl.domElement
         el.addEventListener(
           "webglcontextlost",
@@ -382,23 +349,8 @@ export default function HeroWebGLCanvas({
         )
       }}
     >
-      <PerspectiveCamera makeDefault position={[0, 0, 5.25]} fov={44} near={0.1} far={48} />
-      <ambientLight intensity={0.48} />
-      <directionalLight position={[4, 5, 3]} intensity={0.85} color="#CDCBCA" />
-      <directionalLight position={[-4, -2, -3]} intensity={0.72} color="#D41514" />
-      <pointLight position={[0, 0, 2]} intensity={0.68} color="#D41514" />
-
-      <HeroSceneTech reduced={reducedMotion} />
-      <HeroBackdropPass />
-
-      <View
-        track={phoneTrackRef as RefObject<HTMLElement>}
-        frames={Infinity}
-        index={2}
-      >
-        <PerspectiveCamera makeDefault fov={30} position={[0, 0.1, 5.75]} near={0.1} far={60} />
-        <PhoneScene imageSrc={imageSrc} />
-      </View>
+      <PerspectiveCamera makeDefault fov={30} position={[0, 0.1, 5.75]} near={0.1} far={60} />
+      <PhoneScene imageSrc={imageSrc} reducedMotion={reducedMotion} />
     </Canvas>
   )
 }

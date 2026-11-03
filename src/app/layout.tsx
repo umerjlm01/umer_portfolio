@@ -15,7 +15,7 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "Syed Muhammad Umer · Mobile Application Developer",
   description:
-    "Flutter Developer with 1+ years of experience shipping cross-platform apps for Android and iOS — professional networking, e-commerce, real-time chat, AI-powered analysis, and 3D educational content.",
+    "Flutter Developer with 1+ years of experience shipping cross-platform apps for Android and iOS: networking, e-commerce, realtime chat, and subscription products.",
   keywords: [
     "Flutter Developer",
     "Mobile Application Developer",

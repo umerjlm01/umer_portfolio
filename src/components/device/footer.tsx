@@ -15,7 +15,7 @@ export function Footer() {
           target="_blank"
           rel="noreferrer noopener"
           className="footer-social"
-          aria-label={`GitHub — ${profile.githubLabel}`}
+          aria-label={`GitHub, ${profile.githubLabel}`}
         >
           <FaGithub className="footer-social-icon" aria-hidden />
           <span>{profile.githubLabel}</span>
@@ -25,19 +25,12 @@ export function Footer() {
           target="_blank"
           rel="noreferrer noopener"
           className="footer-social"
-          aria-label={`LinkedIn — ${profile.linkedinLabel}`}
+          aria-label={`LinkedIn, ${profile.linkedinLabel}`}
         >
           <FaLinkedin className="footer-social-icon" aria-hidden />
           <span>{profile.linkedinLabel}</span>
         </a>
       </div>
-      <p className="footer-meta">© {year} · Flutter · Next.js · Three.js</p>
-      <p className="footer-model">
-        3D model: iPhone 18 Pro Max · {projects.length} featured apps ·{" "}
-        <a href={profile.cvUrl} className="footer-code-link">
-          resume.pdf
-        </a>
-      </p>
     </footer>
   )
 }
