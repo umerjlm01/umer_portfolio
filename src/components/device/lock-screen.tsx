@@ -1,11 +1,14 @@
 "use client"
 
 import { animate, motion, useMotionValue, useTransform } from "framer-motion"
-import { useEffect, useRef, type PointerEvent as ReactPointerEvent } from "react"
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react"
 import { ChevronRight, Lock } from "lucide-react"
 import { useClock } from "@/hooks/use-clock"
-import { useDeviceMode } from "@/hooks/use-device-mode"
 import { profile } from "@/lib/portfolio-data"
+
+/** Must match `.lock-slide-knob` size/inset in device-portfolio.css */
+const KNOB_SIZE_PX = 44
+const KNOB_TRACK_INSET_PX = 4
 
 interface LockScreenProps {
   onUnlock: () => void
@@ -22,21 +25,49 @@ interface LockScreenProps {
  */
 export function LockScreen({ onUnlock }: LockScreenProps) {
   const clock = useClock()
-  const { mode } = useDeviceMode()
+  const trackRef = useRef<HTMLDivElement>(null)
   const x = useMotionValue(0)
   const unlockedRef = useRef(false)
+  const [maxTravel, setMaxTravel] = useState(0)
 
   // The lock screen translates up as the unlock completes.
   const y = useMotionValue(0)
   const liftOpacity = useTransform(y, [0, -200], [1, 0])
 
-  // Threshold: knob must travel ~75% of the track width to unlock.
-  const threshold = mode === "phone" ? 180 : 280
+  // Full slide: knob travels until it sits flush on the right inset of the track.
+  useEffect(() => {
+    const track = trackRef.current
+    if (!track) return
 
-  const knobX = useTransform(x, [0, threshold], [0, threshold])
-  const trackFill = useTransform(x, [0, threshold], ["0%", "100%"])
+    const measure = () => {
+      const travel = Math.max(
+        0,
+        track.clientWidth - KNOB_SIZE_PX - KNOB_TRACK_INSET_PX * 2
+      )
+      setMaxTravel(travel)
+    }
+
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(track)
+    return () => ro.disconnect()
+  }, [])
+
+  const threshold = maxTravel
+
+  const knobX = useTransform(x, (v) => {
+    if (threshold <= 0) return 0
+    const t = Math.min(Math.max(v, 0), threshold)
+    return t
+  })
+  const trackFill = useTransform(x, (v) => {
+    if (threshold <= 0) return "0%"
+    const pct = Math.min(Math.max(v / threshold, 0), 1) * 100
+    return `${pct}%`
+  })
 
   useEffect(() => {
+    if (threshold <= 0) return
     const unsub = x.on("change", (latest) => {
       if (latest >= threshold && !unlockedRef.current) {
         unlockedRef.current = true
@@ -70,7 +101,7 @@ export function LockScreen({ onUnlock }: LockScreenProps) {
     ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
   }
   const onPointerMove = (e: ReactPointerEvent) => {
-    if (startX.current === null) return
+    if (startX.current === null || threshold <= 0) return
     const delta = e.clientX - startX.current
     if (delta > 0) {
       x.set(Math.min(threshold, delta))
@@ -149,6 +180,7 @@ export function LockScreen({ onUnlock }: LockScreenProps) {
           <span className="lock-hint-text">Slide to unlock</span>
         </motion.div>
         <div
+          ref={trackRef}
           className="lock-slide-track"
           role="slider"
           aria-label="Slide to unlock the portfolio"

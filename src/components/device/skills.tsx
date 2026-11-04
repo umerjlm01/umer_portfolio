@@ -81,7 +81,7 @@ export function Skills() {
   return (
     <section id="skills" className="skills-section">
       <p className="eyeball">Toolbox</p>
-      <h2 className="section-title">Skills</h2>
+      <h2 className="section-title">Technologies I have used</h2>
       <div className="chrome-divider section-divider" />
 
       {skillGroups.map((group, gi) => {

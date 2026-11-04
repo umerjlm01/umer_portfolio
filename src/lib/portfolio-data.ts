@@ -2,9 +2,9 @@ export const profile = {
   name: "Syed Muhammad Umer",
   shortName: "Umer",
   role: "Mobile Application Developer",
-  tagline: "Flutter Developer",
+  tagline: "Mobile Application Developer",
   heroTagline:
-    "I build and ship Flutter apps for Android and iOS: networking, e-commerce, realtime chat, and subscriptions.",
+    "I build and ship mobile apps for Android and iOS: networking, e-commerce, realtime chat, and subscriptions.",
   location: "Lahore, Punjab, Pakistan",
   phone: "+92 334-5558580",
   phoneHref: "+923345558580",
@@ -15,13 +15,13 @@ export const profile = {
   githubLabel: "umerjlm01",
   cvUrl: "/portfolio/resume.pdf",
   summary:
-    "Flutter developer with 1+ years of experience shipping cross-platform apps for Android and iOS. Work includes professional networking, e-commerce, realtime chat, lottery operations, and AI styling with subscriptions.",
+    "Mobile Application Developer with 1+ years of experience shipping cross-platform apps for Android and iOS. Work includes professional networking, e-commerce, realtime chat, lottery operations, and AI styling with subscriptions.",
   summaryExtra:
-    "Comfortable across the stack: Bloc and Clean Architecture on the client, Firebase and Supabase on the backend, plus RevenueCat, payment gateways, FCM, deep linking, and ZegoCloud for calls. I own features end to end, from UI polish to API integration and store releases.",
+    "Technologies I have used include Flutter, Bloc, and Clean Architecture on the client, Firebase and Supabase on the backend, plus RevenueCat, payment gateways, FCM, deep linking, and ZegoCloud for calls. I own features end to end, from UI polish to API integration and store releases.",
 }
 
 export const stats = [
-  { value: "1+", label: "Year Flutter Experience" },
+  { value: "1+", label: "Year Mobile Application Experience" },
   { value: "2", label: "Apps on Google Play" },
   { value: "4", label: "Featured Apps" },
   { value: "4+", label: "Payment & IAP Integrations" },
