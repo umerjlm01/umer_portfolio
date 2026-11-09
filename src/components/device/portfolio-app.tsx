@@ -19,6 +19,7 @@ import { BottomTabs } from "./bottom-tabs"
 import { LiveTime, StatusBar, StatusIconsOnly } from "./status-bar"
 import { ScrollProgress } from "./scroll-progress"
 import { Hero } from "./hero"
+import { About } from "./about"
 import { Projects } from "./projects"
 import { Experience } from "./experience"
 import { Skills } from "./skills"
@@ -155,6 +156,7 @@ export default function PortfolioApp() {
             }
           >
             <Hero activeProject={activeProject} onSelectProject={handleSelectProject} />
+            <About />
             <Projects activeProject={activeProject} onSelectProject={handleSelectProject} />
             <Experience />
             <Skills />

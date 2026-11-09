@@ -13,16 +13,34 @@ export const profile = {
   linkedinLabel: "syed-muhammad-umer",
   github: "https://github.com/umerjlm01",
   githubLabel: "umerjlm01",
-  cvUrl: "/portfolio/resume.pdf",
+  cvUrl:
+    "/portfolio/Syed%20Muhammad%20Umer%20Mobile%20Application%20Dev%20CV.pdf",
   summary:
-    "Mobile Application Developer with 1+ years of experience shipping cross-platform apps for Android and iOS. Work includes professional networking, e-commerce, realtime chat, lottery operations, and AI styling with subscriptions.",
+    "Mobile Application Developer with 2+ years of experience shipping cross-platform Android and iOS apps with Flutter, Bloc, GetX, and React Native. Work spans networking, e-commerce, real-time chat, lottery operations, and AI styling with subscriptions, including 3 apps on the Play Store / App Store and 4+ payment / in-app purchase integrations.",
   summaryExtra:
-    "Technologies I have used include Flutter, Bloc, and Clean Architecture on the client, Firebase and Supabase on the backend, plus RevenueCat, payment gateways, FCM, deep linking, and ZegoCloud for calls. I own features end to end, from UI polish to API integration and store releases.",
+    "Experienced with Firebase and Supabase backends, PayPal, Stripe and other payment gateways, RevenueCat, FCM, deep linking, and ZegoCloud voice/video. I own features end to end: architecture, UI/UX, APIs, authentication, payments, push notifications, testing, store listings, and Google Play / App Store release. Day to day I build with Claude, Cursor, Gemini, and Google Antigravity.",
+}
+
+export const about = {
+  self: [
+    "I write code for a living, treat pizza like a food group, and watch football until the last minute of extra time. Dark humor is my default setting; if the room goes quiet, that was probably me.",
+    "I do not talk much unless I am with the people I actually care about. Then good luck getting a word in. Between matches I disappear into TV shows and a soundtrack that runs from Pink Floyd and Led Zeppelin to Coldplay.",
+  ],
+  others:
+    "People who know me say I know my boundaries and I read the room: I meet people where they are and keep the energy accordingly. Quiet until it counts, then I show up.",
+  hobbies: [
+    "Football",
+    "TV shows",
+    "Music: Pink Floyd, Led Zeppelin, Coldplay",
+    "Pizza, obviously",
+  ],
+  volunteer:
+    "I helped teach computer topics to students at the government school where my mother teaches, covering the basics so her classes had extra hands when they needed them.",
 }
 
 export const stats = [
-  { value: "1+", label: "Year Mobile Application Experience" },
-  { value: "2", label: "Apps on Google Play" },
+  { value: "2+", label: "Years Mobile Application Experience" },
+  { value: "3", label: "Apps on Play Store / App Store" },
   { value: "4", label: "Featured Apps" },
   { value: "4+", label: "Payment & IAP Integrations" },
 ]
@@ -58,15 +76,16 @@ export const projects: Project[] = [
     category: "Professional Networking",
     tagline: "Cross-platform professional networking app",
     description:
-      "A professional networking platform built and maintained in Flutter, with secure authentication, payments, and content publishing across mobile and web.",
+      "A professional networking platform built and maintained in Flutter, with secure authentication, payments, and content publishing across mobile and web. Store release coming soon on the App Store; live on Google Play.",
     highlights: [
-      "Secure auth with email/OTP plus Google, Facebook & Apple OAuth",
-      "Deep linking for membership, payment and content flows",
-      "Payment gateways for in-app memberships & subscriptions",
-      "Firebase in-app notifications, Analytics & Google Analytics",
-      "Content publishing (jobs / events / articles) + compliance features",
+      "Delivered end to end: architecture, UI/UX, APIs, authentication, and store-ready release",
+      "Implemented email/OTP sign-in plus Google, Facebook, and Apple OAuth",
+      "Built deep linking for membership, payment, and content flows",
+      "Integrated PayPal, Stripe, and payment gateways for memberships and subscriptions",
+      "Added Firebase notifications and Firebase/Google Analytics for engagement tracking",
+      "Content publishing (jobs / events / articles) with Play Store privacy and compliance",
     ],
-    stack: ["Flutter", "Firebase", "OAuth", "Deep Linking", "Payments", "Analytics"],
+    stack: ["Flutter", "Firebase", "OAuth", "Deep Linking", "PayPal", "Stripe", "Analytics"],
     screenshot: "/portfolio/screens/pantsuit-professionals.png",
     accent: "#dda0b5",
     architectureLine:
@@ -84,15 +103,16 @@ export const projects: Project[] = [
     category: "Lottery & Payments",
     tagline: "Lottery app built from scratch",
     description:
-      "A lottery mobile application developed from scratch in Flutter: sortitions, play validation, full ticket lifecycle management, and prepaid bill payments.",
+      "Lottery app built from scratch covering sortitions, tickets, and prepaid bill payments.",
     highlights: [
+      "Built from scratch in Flutter with Clean Architecture through testing and deployment",
       "Dynamic sortition system with play validations",
       "Full ticket lifecycle: create, delete, duplicate & monitor",
-      "Prepaid bill payments alongside existing payment workflows",
-      "Real-time API sync with the web platform",
-      "Core architecture & business logic designed for scale",
+      "Added prepaid payments with PayPal and Stripe, sharing payment workflows with existing transactions",
+      "Synchronized with the web platform through real-time API integration",
+      "Core domain logic designed for scale and maintainable releases",
     ],
-    stack: ["Flutter", "REST API", "Payments", "Clean Architecture", "Dio"],
+    stack: ["Flutter", "REST API", "PayPal", "Stripe", "Clean Architecture", "Dio"],
     screenshot: "/portfolio/screens/cnp-lottio.png",
     accent: "#5da8e8",
     architectureLine:
@@ -105,15 +125,25 @@ export const projects: Project[] = [
     category: "AI Styling & Subscriptions",
     tagline: "Photo-based styling with in-app purchases",
     description:
-      "An AI styling app that matches outfits from photos, monetized through RevenueCat subscriptions and consumable match packs.",
+      "Photo-based AI styling app with in-app purchases, shipped on Google Play and the App Store.",
     highlights: [
+      "Managed store listings, TestFlight and Play testing, and in-app purchase compliance for both stores",
       "RevenueCat IAP: Silver / Gold / Platinum / Diamond tiers, monthly and annual",
-      "Consumable match packs with coupon & referral discounts",
-      "FCM + local notifications, deep-link referrals",
-      "Photo-based matching & in-store overlay match UI",
-      "Account and plan management flows",
+      "Consumable match packs with coupon and referral discounts",
+      "Added FCM push and local notifications with deep-link referrals",
+      "Delivered photo-based AI matching with an overlay match UI",
+      "Account and plan management on real devices via TestFlight and Play",
     ],
-    stack: ["Flutter", "RevenueCat", "IAP", "FCM", "Deep Linking", "StoreKit"],
+    stack: [
+      "Flutter",
+      "RevenueCat",
+      "IAP",
+      "FCM",
+      "Deep Linking",
+      "StoreKit",
+      "App Store",
+      "Google Play",
+    ],
     screenshot: "/portfolio/screens/agile-styling.png",
     accent: "#ef8fab",
     architectureLine:
@@ -132,13 +162,12 @@ export const projects: Project[] = [
     category: "E-commerce & Real-time Chat",
     tagline: "Clothing e-commerce with live chat",
     description:
-      "A cross-platform clothing e-commerce app with order management and real-time chat featuring Google Maps locations, voice/video calls and rich attachments.",
+      "Clothing e-commerce app with live chat, maps, and voice/video calling.",
     highlights: [
-      "Auth, product browsing, detail views & dynamic cart",
-      "Dio + Supabase backend with order management",
-      "Real-time chat with Google Maps locations",
-      "Voice / video calls via ZegoCloud, WhatsApp-style attachments",
-      "Bloc + Streams state, FCM with Supabase Edge Functions",
+      "Built end to end: authentication, product catalog, cart, chat, calls, and push notifications",
+      "Integrated Dio for APIs and Supabase for backend services, including order management",
+      "Implemented real-time chat with Google Maps locations, ZegoCloud voice/video calls, and WhatsApp-style attachments",
+      "Managed state with Bloc and Streams; delivered FCM notifications via Supabase Edge Functions",
     ],
     stack: ["Flutter", "Supabase", "Dio", "ZegoCloud", "Bloc", "FCM"],
     screenshot: "/portfolio/screens/wardrobe-chat.png",
@@ -164,7 +193,7 @@ export const services = [
   {
     title: "Auth, payments & subscriptions",
     description:
-      "OAuth, RevenueCat and gateway integrations, memberships, and consumable IAP tested on real devices.",
+      "OAuth, RevenueCat, PayPal, Stripe and other payment gateways, memberships, and consumable IAP tested on real devices.",
   },
   {
     title: "Realtime & backend integration",
@@ -174,7 +203,7 @@ export const services = [
   {
     title: "Maintainable architecture",
     description:
-      "Bloc, Clean Architecture, and performance work: caching, async pipelines, and clear module boundaries.",
+      "Bloc, GetX, Clean Architecture, and performance work: caching, async pipelines, and clear module boundaries.",
   },
 ]
 
@@ -182,25 +211,26 @@ export const experience = [
   {
     role: "Flutter Developer",
     company: "Rev9 Solutions",
-    period: "Nov 2025 to Present",
+    period: "Nov 2024 to Present",
     location: "Jhelum, Punjab",
     current: true,
     points: [
       "Ship and maintain Flutter features for production apps (networking, styling, lottery) used by real customers on Google Play and internal deployments.",
-      "Integrate REST APIs, payments, and analytics end to end with fewer handoffs between UI, business logic, and backend contracts.",
-      "Improve reliability and performance by tightening async flows, fixing integration edge cases, and keeping architecture easy to extend.",
+      "Integrate REST APIs, payment gateways, and analytics end to end, from architecture and UI through to store release.",
+      "Improve reliability and performance by handling async flows and integration edge cases within a maintainable, Clean Architecture codebase.",
+      "Collaborate with cross-functional and backend teams on API contracts, feature delivery, and testing.",
     ],
   },
   {
     role: "Flutter Intern",
     company: "Rev9 Solutions",
-    period: "Aug 2025 to Oct 2025",
+    period: "Aug 2024 to Oct 2024",
     location: "Jhelum, Punjab",
     current: false,
     points: [
-      "Delivered cross-platform modules with Dio and Supabase, including order flows and authenticated browsing for e-commerce clients.",
-      "Added real-time engagement: FCM notifications, Supabase Edge Functions, and ZegoCloud voice/video in a WhatsApp-style chat experience.",
-      "Built animated UI with Bloc and Streams on Clean Architecture; cut perceived load time via caching and smarter network usage.",
+      "Built cross-platform mobile modules with Flutter, Dart, Dio, and Supabase, including orders and authenticated e-commerce browsing.",
+      "Implemented real-time engagement features: push notifications via FCM and Supabase Edge Functions, and voice/video chat with ZegoCloud.",
+      "Built responsive UI with Bloc and Streams on Clean Architecture; improved performance through caching and network optimization.",
     ],
   },
 ]
@@ -209,7 +239,12 @@ export const skillGroups = [
   {
     title: "Languages & Frameworks",
     icon: "code",
-    skills: ["Dart", "Flutter", "React Native", "Python", "PHP"],
+    skills: ["Dart", "Flutter", "React Native", "Next.js", "Python", "PHP"],
+  },
+  {
+    title: "AI & Assistants",
+    icon: "sparkles",
+    skills: ["Claude", "Cursor", "Gemini", "Google Antigravity"],
   },
   {
     title: "Backend & Integration",
@@ -225,12 +260,25 @@ export const skillGroups = [
     title: "Payments & Auth",
     icon: "card",
     skills: [
+      "PayPal",
+      "Stripe",
+      "Payment Gateways",
       "RevenueCat (IAP / Subscriptions)",
       "Google Sign-In",
       "Sign in with Apple",
-      "Payment Gateways",
       "StoreKit",
       "Google Play Billing",
+    ],
+  },
+  {
+    title: "Stores & Delivery",
+    icon: "store",
+    skills: [
+      "Google Play",
+      "App Store",
+      "TestFlight",
+      "UI/UX",
+      "Responsive Testing",
     ],
   },
   {
@@ -238,8 +286,13 @@ export const skillGroups = [
     icon: "wrench",
     skills: [
       "Bloc",
+      "GetX",
       "Streams",
       "RxDart",
+      "Redux / Redux Toolkit",
+      "Context API",
+      "Hooks",
+      "React Navigation",
       "Jira",
       "Slack",
       "Clean Architecture",
@@ -264,9 +317,16 @@ export const skillUsedInProjects: Record<string, string[]> = {
   "RevenueCat (IAP / Subscriptions)": ["Agile Styling"],
   "Google Sign-In": ["Pantsuit Pro"],
   "Sign in with Apple": ["Pantsuit Pro"],
+  PayPal: ["Pantsuit Pro", "Lottio"],
+  Stripe: ["Pantsuit Pro", "Lottio"],
   "Payment Gateways": ["Pantsuit Pro", "Lottio"],
   StoreKit: ["Agile Styling"],
   "Google Play Billing": ["Agile Styling", "Pantsuit Pro"],
+  "Google Play": ["Pantsuit Pro", "Agile Styling"],
+  "App Store": ["Agile Styling"],
+  TestFlight: ["Agile Styling"],
+  "UI/UX": ["Pantsuit Pro", "Lottio", "Agile Styling", "Wardrobe"],
+  "Responsive Testing": ["Pantsuit Pro", "Lottio", "Agile Styling", "Wardrobe"],
   Bloc: ["Wardrobe", "Agile Styling"],
   Streams: ["Wardrobe"],
   RxDart: ["Agile Styling"],

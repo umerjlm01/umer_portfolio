@@ -1,10 +1,9 @@
 "use client"
 
 import { FaGithub, FaLinkedin } from "react-icons/fa"
-import { profile, projects } from "@/lib/portfolio-data"
+import { profile } from "@/lib/portfolio-data"
 
 export function Footer() {
-  const year = new Date().getFullYear()
   return (
     <footer className="footer">
       <div className="chrome-divider" style={{ marginBottom: "1rem" }} />

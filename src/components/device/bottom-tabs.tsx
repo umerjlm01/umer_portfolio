@@ -1,10 +1,11 @@
 "use client"
 
-import { Briefcase, Cpu, Home, Layers, Mail } from "lucide-react"
+import { Briefcase, Cpu, Home, Layers, Mail, User } from "lucide-react"
 import { useScrollSpy } from "@/hooks/use-scroll-spy"
 
 export const NAV_ITEMS = [
   { id: "top", label: "Home", icon: Home },
+  { id: "about", label: "About", icon: User },
   { id: "projects", label: "Work", icon: Layers },
   { id: "experience", label: "XP", icon: Briefcase },
   { id: "skills", label: "Skills", icon: Cpu },

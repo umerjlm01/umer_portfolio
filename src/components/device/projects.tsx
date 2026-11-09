@@ -1,6 +1,6 @@
 "use client"
 
-import type { CSSProperties, KeyboardEvent } from "react"
+import { useState, type CSSProperties, type KeyboardEvent } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 import { ChevronRight, Smartphone } from "lucide-react"
 import { projects, type Project } from "@/lib/portfolio-data"
@@ -12,12 +12,19 @@ interface ProjectsProps {
 }
 
 export function Projects({ activeProject, onSelectProject }: ProjectsProps) {
+  /** Expanded details are tap-only — not driven by hero live preview. */
+  const [expandedId, setExpandedId] = useState<string | null>(null)
   const stopProp = (e: { stopPropagation: () => void }) => e.stopPropagation()
+
+  const openProject = (p: Project) => {
+    onSelectProject(p)
+    setExpandedId((prev) => (prev === p.id ? null : p.id))
+  }
 
   const onCardKeyDown = (e: KeyboardEvent<HTMLElement>, p: Project) => {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault()
-      onSelectProject(p)
+      openProject(p)
     }
   }
 
@@ -35,8 +42,9 @@ export function Projects({ activeProject, onSelectProject }: ProjectsProps) {
 
       <div className="projects-grid">
         {projects.map((p) => {
-          const isActive = p.id === activeProject.id
-          const stacksShown = isActive ? p.stack : p.stack.slice(0, 4)
+          const onScreen = p.id === activeProject.id
+          const isExpanded = p.id === expandedId
+          const stacksShown = isExpanded ? p.stack : p.stack.slice(0, 4)
 
           return (
             <motion.article
@@ -45,22 +53,32 @@ export function Projects({ activeProject, onSelectProject }: ProjectsProps) {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-40px" }}
               transition={{ duration: 0.4 }}
-              onClick={() => onSelectProject(p)}
+              onClick={() => openProject(p)}
               onKeyDown={(e) => onCardKeyDown(e, p)}
               tabIndex={0}
               role="button"
-              aria-expanded={isActive}
-              aria-label={`${p.shortName}. ${isActive ? "Expanded" : "Tap to expand"}`}
-              className={isActive ? "project-card active" : "project-card"}
+              aria-expanded={isExpanded}
+              aria-label={`${p.shortName}. ${isExpanded ? "Expanded" : "Tap to expand"}`}
+              className={
+                isExpanded
+                  ? "project-card active"
+                  : onScreen
+                    ? "project-card project-card-onscreen"
+                    : "project-card"
+              }
               style={
                 {
                   ["--card-accent" as string]: p.accent,
-                  ...(isActive
+                  ...(isExpanded
                     ? {
                         borderColor: `${p.accent}99`,
                         boxShadow: `0 0 0 1px ${p.accent}80, 0 0 26px -6px ${p.accent}55`,
                       }
-                    : {}),
+                    : onScreen
+                      ? {
+                          borderColor: `${p.accent}55`,
+                        }
+                      : {}),
                 } as CSSProperties
               }
             >
@@ -72,7 +90,7 @@ export function Projects({ activeProject, onSelectProject }: ProjectsProps) {
                     loading="lazy"
                     className="project-thumb-img"
                   />
-                  {isActive && (
+                  {onScreen && (
                     <span
                       className="project-thumb-ring"
                       style={{ boxShadow: `inset 0 0 0 2px ${p.accent}` }}
@@ -82,9 +100,9 @@ export function Projects({ activeProject, onSelectProject }: ProjectsProps) {
                 <div className="project-card-body">
                   <div className="project-title-row">
                     <h3 className="project-title">{p.shortName}</h3>
-                    {isActive && <span className="project-featured">On screen</span>}
+                    {onScreen && <span className="project-featured">On screen</span>}
                   </div>
-                  {!isActive && (
+                  {!isExpanded && (
                     <p className="project-name-full">{p.name}</p>
                   )}
                   <div className="project-platforms">
@@ -99,7 +117,7 @@ export function Projects({ activeProject, onSelectProject }: ProjectsProps) {
                         {t}
                       </span>
                     ))}
-                    {!isActive && p.stack.length > 4 && (
+                    {!isExpanded && p.stack.length > 4 && (
                       <span className="project-tech-more">
                         +{p.stack.length - 4}
                       </span>
@@ -107,12 +125,12 @@ export function Projects({ activeProject, onSelectProject }: ProjectsProps) {
                   </div>
                 </div>
                 <ChevronRight
-                  className={isActive ? "project-chev active" : "project-chev"}
+                  className={isExpanded ? "project-chev active" : "project-chev"}
                   aria-hidden
                 />
               </div>
 
-              {!isActive && (
+              {!isExpanded && (
                 <p className="project-expand-hint">
                   Tap for details
                   <ChevronRight className="project-expand-hint-icon" aria-hidden />
@@ -120,7 +138,7 @@ export function Projects({ activeProject, onSelectProject }: ProjectsProps) {
               )}
 
               <AnimatePresence initial={false}>
-                {isActive && (
+                {isExpanded && (
                   <motion.div
                     key="details"
                     initial={{ opacity: 0, height: 0 }}
