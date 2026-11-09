@@ -1,7 +1,7 @@
 "use client"
 
 import type { ReactNode, RefObject } from "react"
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef } from "react"
 import { Canvas, useFrame, useThree } from "@react-three/fiber"
 import { ContactShadows, Float, PerspectiveCamera, useGLTF } from "@react-three/drei"
 import * as THREE from "three"
@@ -157,12 +157,8 @@ function PhoneModel({ imageSrc }: { imageSrc: string }) {
   const gl = useThree((s) => s.gl)
   const materialRef = useRef<THREE.MeshBasicMaterial | null>(null)
   const aspectRef = useRef(2532 / 1170)
-  const setupDoneRef = useRef(false)
-  const [modelReady, setModelReady] = useState(false)
 
   useEffect(() => {
-    if (setupDoneRef.current) return
-    setupDoneRef.current = true
     const mesh = findScreenMesh(scene)
     if (!mesh) {
       console.warn("[phone] no screen mesh found in GLB")
@@ -193,11 +189,15 @@ function PhoneModel({ imageSrc }: { imageSrc: string }) {
     const s = PHONE_HEIGHT / Math.max(total.y, 1e-6)
     scene.scale.setScalar(s)
     scene.position.set(-center.x * s, -center.y * s, -center.z * s)
-    setModelReady(true)
+
+    return () => {
+      materialRef.current = null
+      mat.map = null
+      mat.dispose()
+    }
   }, [scene])
 
   useEffect(() => {
-    if (!modelReady) return
     const mat = materialRef.current
     if (!mat || !imageSrc) return
     if (!isPortfolioScreenshot(imageSrc)) return
@@ -223,10 +223,9 @@ function PhoneModel({ imageSrc }: { imageSrc: string }) {
     return () => {
       cancelled = true
     }
-  }, [imageSrc, gl, modelReady])
+  }, [imageSrc, gl, scene])
 
   useEffect(() => {
-    if (!modelReady) return
     const el = gl.domElement
     const onRestored = () => {
       clearScreenTextureCache()
@@ -244,17 +243,7 @@ function PhoneModel({ imageSrc }: { imageSrc: string }) {
     }
     el.addEventListener("webglcontextrestored", onRestored, false)
     return () => el.removeEventListener("webglcontextrestored", onRestored)
-  }, [gl, imageSrc, modelReady])
-
-  useEffect(() => {
-    return () => {
-      const mat = materialRef.current
-      if (mat) {
-        mat.map = null
-        mat.dispose()
-      }
-    }
-  }, [])
+  }, [gl, imageSrc, scene])
 
   return <primitive object={scene} />
 }
