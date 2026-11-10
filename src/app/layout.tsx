@@ -15,7 +15,7 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "Syed Muhammad Umer · Mobile Application Developer",
   description:
-    "Mobile Application Developer with 2+ years shipping cross-platform Android and iOS apps with Flutter, Bloc, GetX, and React Native: networking, e-commerce, realtime chat, lottery, and AI styling with subscriptions.",
+    "Mobile Application Developer with 2+ years shipping Flutter and React Native apps for Android and iOS. Auth, payments, Twilio, Cloudflare, Google Cloud, and AWS on production work including networking, e-commerce, chat, and subscriptions.",
   keywords: [
     "Mobile Application Developer",
     "Flutter",
@@ -27,6 +27,11 @@ export const metadata: Metadata = {
     "Firebase",
     "PayPal",
     "Stripe",
+    "Twilio",
+    "Cloudflare",
+    "AWS",
+    "Google Cloud",
+    "Facebook Sign-In",
     "Portfolio",
   ],
   authors: [{ name: "Syed Muhammad Umer" }],
@@ -36,7 +41,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Syed Muhammad Umer · Mobile Application Developer",
     description:
-      "Mobile Application Developer with 2+ years shipping cross-platform apps for Android and iOS with Flutter. Interactive 3D portfolio showcase.",
+      "Mobile Application Developer with 2+ years shipping Flutter apps for Android and iOS — payments, OAuth, Twilio, and cloud infra. Interactive 3D portfolio.",
     siteName: "Syed Muhammad Umer",
     type: "website",
   },

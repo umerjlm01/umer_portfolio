@@ -18,7 +18,7 @@ export const profile = {
   summary:
     "Mobile Application Developer with 2+ years of experience shipping cross-platform Android and iOS apps with Flutter, Bloc, GetX, and React Native. Work spans networking, e-commerce, real-time chat, lottery operations, and AI styling with subscriptions, including 3 apps on the Play Store / App Store and 4+ payment / in-app purchase integrations.",
   summaryExtra:
-    "Experienced with Firebase and Supabase backends, PayPal, Stripe and other payment gateways, RevenueCat, FCM, deep linking, and ZegoCloud voice/video. I own features end to end: architecture, UI/UX, APIs, authentication, payments, push notifications, testing, store listings, and Google Play / App Store release. Day to day I build with Claude, Cursor, Gemini, and Google Antigravity.",
+    "Experienced with Firebase and Supabase backends, PayPal, Stripe and other payment gateways, RevenueCat, FCM, deep linking, and ZegoCloud voice/video. On production apps I have also shipped Facebook Sign-In, Twilio messaging, and infra with Cloudflare, Google Cloud, and AWS. I own features end to end: architecture, UI/UX, APIs, authentication, payments, push notifications, testing, store listings, and Google Play / App Store release. Day to day I build with Claude, Cursor, Gemini, and Google Antigravity.",
 }
 
 export const about = {
@@ -79,13 +79,24 @@ export const projects: Project[] = [
       "A professional networking platform built and maintained in Flutter, with secure authentication, payments, and content publishing across mobile and web. Store release coming soon on the App Store; live on Google Play.",
     highlights: [
       "Delivered end to end: architecture, UI/UX, APIs, authentication, and store-ready release",
-      "Implemented email/OTP sign-in plus Google, Facebook, and Apple OAuth",
+      "Implemented email/OTP sign-in plus Google, Facebook Sign-In, and Apple OAuth",
+      "Integrated Twilio messaging alongside Firebase notifications and analytics",
       "Built deep linking for membership, payment, and content flows",
       "Integrated PayPal, Stripe, and payment gateways for memberships and subscriptions",
-      "Added Firebase notifications and Firebase/Google Analytics for engagement tracking",
+      "Used Cloudflare, Google Cloud, and AWS for delivery/infra; tracked web presence with Google Search Console",
       "Content publishing (jobs / events / articles) with Play Store privacy and compliance",
     ],
-    stack: ["Flutter", "Firebase", "OAuth", "Deep Linking", "PayPal", "Stripe", "Analytics"],
+    stack: [
+      "Flutter",
+      "Firebase",
+      "Facebook Sign-In",
+      "Twilio",
+      "Cloudflare",
+      "Google Cloud",
+      "AWS",
+      "PayPal",
+      "Stripe",
+    ],
     screenshot: "/portfolio/screens/pantsuit-professionals.png",
     accent: "#dda0b5",
     architectureLine:
@@ -249,12 +260,28 @@ export const skillGroups = [
   {
     title: "Backend & Integration",
     icon: "database",
-    skills: ["REST API", "Firebase", "Supabase", "Dio", "ZegoCloud"],
+    skills: [
+      "REST API",
+      "Firebase",
+      "Supabase",
+      "Dio",
+      "ZegoCloud",
+      "Twilio",
+      "Cloudflare",
+      "Google Cloud",
+      "AWS",
+    ],
   },
   {
     title: "Analytics & Notifications",
     icon: "bell",
-    skills: ["Firebase Analytics", "Google Analytics", "FCM", "Deep Linking"],
+    skills: [
+      "Firebase Analytics",
+      "Google Analytics",
+      "Google Search Console",
+      "FCM",
+      "Deep Linking",
+    ],
   },
   {
     title: "Payments & Auth",
@@ -265,6 +292,7 @@ export const skillGroups = [
       "Payment Gateways",
       "RevenueCat (IAP / Subscriptions)",
       "Google Sign-In",
+      "Facebook Sign-In",
       "Sign in with Apple",
       "StoreKit",
       "Google Play Billing",
@@ -285,6 +313,7 @@ export const skillGroups = [
     title: "Tools & Practices",
     icon: "wrench",
     skills: [
+      "Git",
       "Bloc",
       "GetX",
       "Streams",
@@ -316,7 +345,14 @@ export const skillUsedInProjects: Record<string, string[]> = {
   "Deep Linking": ["Pantsuit Pro", "Agile Styling"],
   "RevenueCat (IAP / Subscriptions)": ["Agile Styling"],
   "Google Sign-In": ["Pantsuit Pro"],
+  "Facebook Sign-In": ["Pantsuit Pro"],
   "Sign in with Apple": ["Pantsuit Pro"],
+  Twilio: ["Pantsuit Pro"],
+  Cloudflare: ["Pantsuit Pro"],
+  "Google Cloud": ["Pantsuit Pro"],
+  AWS: ["Pantsuit Pro"],
+  "Google Search Console": ["Pantsuit Pro"],
+  Git: ["Pantsuit Pro", "Lottio", "Agile Styling", "Wardrobe"],
   PayPal: ["Pantsuit Pro", "Lottio"],
   Stripe: ["Pantsuit Pro", "Lottio"],
   "Payment Gateways": ["Pantsuit Pro", "Lottio"],

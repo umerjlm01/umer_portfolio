@@ -20,14 +20,19 @@ import {
   SiAnthropic,
   SiApple,
   SiAppstore,
+  SiCloudflare,
   SiCursor,
   SiDart,
+  SiFacebook,
   SiFirebase,
   SiFlutter,
+  SiGit,
   SiGoogle,
   SiGoogleanalytics,
+  SiGooglecloud,
   SiGooglegemini,
   SiGoogleplay,
+  SiGooglesearchconsole,
   SiJira,
   SiNextdotjs,
   SiPaypal,
@@ -39,8 +44,8 @@ import {
   SiStripe,
   SiSupabase,
 } from "react-icons/si"
-import { FaMobileAlt, FaPencilRuler, FaReact } from "react-icons/fa"
-import { TbApi, TbBrandReactNative } from "react-icons/tb"
+import { FaAws, FaMobileAlt, FaPencilRuler, FaReact } from "react-icons/fa"
+import { TbApi, TbBrandReactNative, TbBrandTwilio } from "react-icons/tb"
 import { Bell, ChevronDown, Code2, CreditCard, Database, Sparkles, Store, Wrench } from "lucide-react"
 import { skillGroups, skillUsedInProjects } from "@/lib/portfolio-data"
 import type { LucideIcon } from "lucide-react"
@@ -62,8 +67,13 @@ const SKILL_ICON: Record<string, { icon: IconType; color: string }> = {
   Supabase: { icon: SiSupabase, color: "#3FCF8E" },
   Dio: { icon: FaExchangeAlt, color: "#54C5F8" },
   ZegoCloud: { icon: FaVideo, color: "#5B8CFF" },
+  Twilio: { icon: TbBrandTwilio, color: "#F22F46" },
+  Cloudflare: { icon: SiCloudflare, color: "#F38020" },
+  "Google Cloud": { icon: SiGooglecloud, color: "#4285F4" },
+  AWS: { icon: FaAws, color: "#FF9900" },
   "Firebase Analytics": { icon: SiFirebase, color: "#FFCA28" },
   "Google Analytics": { icon: SiGoogleanalytics, color: "#E37400" },
+  "Google Search Console": { icon: SiGooglesearchconsole, color: "#458CF5" },
   FCM: { icon: FaBell, color: "#FF6D00" },
   "Deep Linking": { icon: FaLink, color: "#A78BFA" },
   PayPal: { icon: SiPaypal, color: "#003087" },
@@ -75,10 +85,12 @@ const SKILL_ICON: Record<string, { icon: IconType; color: string }> = {
   "UI/UX": { icon: FaPencilRuler, color: "#E8A838" },
   "Responsive Testing": { icon: FaMobileAlt, color: "#22D3EE" },
   "Google Sign-In": { icon: SiGoogle, color: "#4285F4" },
+  "Facebook Sign-In": { icon: SiFacebook, color: "#1877F2" },
   "Sign in with Apple": { icon: SiApple, color: "#A2AAAD" },
   "Payment Gateways": { icon: SiStripe, color: "#635BFF" },
   StoreKit: { icon: SiApple, color: "#A2AAAD" },
   "Google Play Billing": { icon: SiGoogleplay, color: "#34A853" },
+  Git: { icon: SiGit, color: "#F05032" },
   Bloc: { icon: FaCubes, color: "#1473E6" },
   GetX: { icon: FaCubes, color: "#8A2BE2" },
   Streams: { icon: FaStream, color: "#38BDF8" },
